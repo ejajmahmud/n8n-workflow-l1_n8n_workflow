@@ -1,0 +1,185 @@
+{
+  "name": "GetAuthors",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "saba-review2/authors",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        160,
+        -220
+      ],
+      "id": "c9152da7-fe16-4c76-8687-0fb1c217c2fc",
+      "name": "Webhook",
+      "webhookId": "31241ee5-66ad-43c1-9203-208d4ae726b3"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        940,
+        -220
+      ],
+      "id": "757a52f6-48d6-4f66-bb5b-81625b25ae34",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const files = $json.stdout.split(\"\\n\")\nreturn {\n  folder: $(\"GetAuthors\").item.json.folder,\n  style: $(\"GetAuthors\").item.json.style,\n  files,\n  name: $(\"GetAuthors\").item.json.name,\n  id: $(\"GetAuthors\").item.json.id,\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        -220
+      ],
+      "id": "fc860068-0db1-49df-bdbc-75caa3c96ebe",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "executeOnce": false,
+        "command": "=ls {{ $json.folder }}"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        520,
+        -220
+      ],
+      "id": "6d99db24-afd3-4591-ba22-fdc5e778f043",
+      "name": "CheckFiles"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "list",
+          "cachedResultName": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "writer",
+          "mode": "list",
+          "cachedResultName": "writer"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        360,
+        -220
+      ],
+      "id": "2cfcecbb-a530-4434-8b10-bb3b36c4c779",
+      "name": "GetAuthors",
+      "credentials": {
+        "postgres": {
+          "id": "DdV4xf56xRHB930N",
+          "name": "Postgres"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n.lumigame.com",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36 Edg/137.0.0.0",
+            "sec-ch-ua": "\"Microsoft Edge\";v=\"137\", \"Chromium\";v=\"137\", \"Not/A)Brand\";v=\"24\"",
+            "sec-ch-ua-mobile": "?0",
+            "accept": "*/*",
+            "sec-fetch-site": "same-origin",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-dest": "empty",
+            "referer": "https://n8n.lumigame.com/webhook/saba-review2",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "en-US,en;q=0.9",
+            "if-none-match": "W/\"19a-otw5ZLp+mAQQCNUWkA8wbywO5f0\"",
+            "priority": "u=1, i",
+            "cookie": "rl_page_init_referrer=RudderEncrypt%3AU2FsdGVkX19EnHvUWMEokLLnQRmW1GVyempfMAyOCSk%3D; rl_page_init_referring_domain=RudderEncrypt%3AU2FsdGVkX1%2BRxzQbaPrzqLGwFI3tAGbkgpVCDxdGuSA%3D; n8n-auth=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjUyNmYwOTEyLTg2YmQtNGM2OS05ZjFkLTcxMjBjNzIzYzc4MSIsImhhc2giOiJMRzdoMEZZK296IiwiYnJvd3NlcklkIjoiWHhVZHhkdFVWVVltUkxybExqbDFRNDFneUMzS1RxWURUMkduR2NzelpkYz0iLCJpYXQiOjE3NDk1MjgzMTUsImV4cCI6MTc1MDEzMzExNX0.UvbkB1Q1N8hYBqk0zkyADEyt7tnfW6gI1kjOQMVGDl8; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX1%2FG4yTeYJGeXP5a081Jq6KoDr56T%2F7IlXJoRjXgt5qQ450vl9%2BMhcD3rOHrKj5eyePlVxIXYh%2B8Mw%3D%3D; rl_user_id=RudderEncrypt%3AU2FsdGVkX1%2B9sWVIbn88VYStt1J2pFW%2F60buP82uv5Yl8F8ExtJpYJXoU9SyTJRQHlrsLgE9WsHKoqZQr5Fom%2FV1qmIEEaADFmM0RO42etGeHbBkkFgUUkNocOoAYZWl7yTaIHVvu4AEOuYRfxTJ4H9Xy0CATsctEaW4TYwlsRE%3D; rl_trait=RudderEncrypt%3AU2FsdGVkX1%2FRLBzqmBRSkk4y%2Fj1xnOtINexRwRjSvlBRHxXqY6KARR5qEAv7NfaZdqRn4jTJqmb8imh3tk71Nlc6HxZTSk35ciI6p5ya0EojyLPE6E%2F6JcA7b0YaAW5ph34nGBgvfiFftkQfzsZyeA%3D%3D; ph_phc_4URIAm1uYfJO7j8kWSe0J8lc8IqnstRLS7Jx8NcakHo_posthog=%7B%22distinct_id%22%3A%2298bfed1c0f22fa9e07d0e38dc58da94b0281d63095bd4ba14894d42a90a063e3%23526f0912-86bd-4c69-9f1d-7120c723c781%22%2C%22%24sesid%22%3A%5B1749529117186%2C%2201975803-8985-7e61-a419-7c7cbbeed24d%22%2C1749528316293%5D%2C%22%24epp%22%3Atrue%2C%22%24initial_person_info%22%3A%7B%22r%22%3A%22%24direct%22%2C%22u%22%3A%22https%3A%2F%2Fn8n.lumigame.com%2Fsignin%3Fredirect%3D%25252F%22%7D%7D; rl_session=RudderEncrypt%3AU2FsdGVkX1%2FIwh9tPQooyczdqLiWz9m28j1liZD%2FyYTeAG14r5s3rtjgwLyRdaDoCYx4C0j6XK5Wl7ZjOX4R%2BjQrDl6jONqbAgKVqchXwDGn6mWBp6JLYWYue0VXIhkf%2Fhap0LPmX%2F95RWA7c6bdsw%3D%3D",
+            "x-forwarded-proto": "https",
+            "x-forwarded-for": "10.10.100.250"
+          },
+          "params": {},
+          "query": {},
+          "body": {},
+          "webhookUrl": "https://n8n.lumigame.com/webhook/load-reviews",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "GetAuthors",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CheckFiles": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetAuthors": {
+      "main": [
+        [
+          {
+            "node": "CheckFiles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1d1f2080-1d58-4237-97ec-f0dec7c155db",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "98bfed1c0f22fa9e07d0e38dc58da94b0281d63095bd4ba14894d42a90a063e3"
+  },
+  "id": "EKUzXtxaaYdPy4lO",
+  "tags": []
+}

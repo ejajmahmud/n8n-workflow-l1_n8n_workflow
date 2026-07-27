@@ -1,0 +1,339 @@
+{
+  "name": "GetOldProjects",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        60
+      ],
+      "id": "056a481a-4246-4617-b9d2-c64cbf4e47c9",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "const projects = [{\n  project: 7,\n  languageBase: \"en\"\n}, {\n  project: 6,\n  languageBase: \"en-US\"\n},                {\n  project: 5,\n  languageBase: \"en\"\n}, {\n  project: 2,\n  languageBase: \"en\"\n},{\n  project: 8,\n  languageBase: \"en\"\n}]\n\nreturn projects;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        60
+      ],
+      "id": "2a4beb5b-0765-4fd6-8327-abade26c9573",
+      "name": "DefineProjects"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return $input.item;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        380,
+        60
+      ],
+      "id": "47ad6929-32a8-4a27-a0b7-d93dee1753ea",
+      "name": "DefineVar"
+    },
+    {
+      "parameters": {
+        "url": "=https://tolgee.sabagame.com/v2/projects/{{ $json.project }}/namespaces",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        540,
+        60
+      ],
+      "id": "49a48011-7fda-48f2-b465-6a7ea25c3ba9",
+      "name": "GetNamespaces",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "VWtLpVxouEBsq6hZ",
+          "name": "tolgee"
+        },
+        "httpHeaderAuth": {
+          "id": "38GHDtQkTfqjRDxD",
+          "name": "Tolgee n8n agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3dde3bac-1f2c-4a8d-8290-aa4056940545",
+              "leftValue": "={{ $json.page.totalPages }}",
+              "rightValue": 1,
+              "operator": {
+                "type": "number",
+                "operation": "lte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        740,
+        80
+      ],
+      "id": "7a2b016c-3ad8-4dcf-aee1-a263fe635e10",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "url": "=https://tolgee.sabagame.com/v2/projects/{{$('DefineVar').item.json.project}}/namespaces",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "size",
+              "value": "={{ $json.page.totalElements }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        960,
+        320
+      ],
+      "id": "94196fdc-c5e3-4734-a79f-fc68fda9be34",
+      "name": "GetNamespaces1",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "VWtLpVxouEBsq6hZ",
+          "name": "tolgee"
+        },
+        "httpHeaderAuth": {
+          "id": "38GHDtQkTfqjRDxD",
+          "name": "Tolgee n8n agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Add a new field called 'myNewField' to the JSON of the item\n$input.item.json.project = $('DefineVar').item.json.project\n\nreturn $input.item;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        180
+      ],
+      "id": "800b883b-629d-428e-8a39-2cea55244bd9",
+      "name": "Code1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        1400,
+        180
+      ],
+      "id": "72a2a25c-7995-46c9-a03c-f5906a00f1cd",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "_embedded.namespaces",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        0
+      ],
+      "id": "0634b22c-510b-4441-8eec-7ea6864d679c",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "_embedded.namespaces",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        300
+      ],
+      "id": "1f2f452c-8a7f-44ff-9fbc-d1a0cdfa61c3",
+      "name": "Split Out1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = []\nfor (const item of $input.all()) {\n  result.push(item.json.id)\n}\n\nreturn {\n  result\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1940,
+        180
+      ],
+      "id": "78a5b144-ba9e-4cb0-905f-b2948d2d3b05",
+      "name": "Code2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "DefineProjects",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DefineProjects": {
+      "main": [
+        [
+          {
+            "node": "DefineVar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DefineVar": {
+      "main": [
+        [
+          {
+            "node": "GetNamespaces",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GetNamespaces1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetNamespaces": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetNamespaces1": {
+      "main": [
+        [
+          {
+            "node": "Split Out1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "989cb8f0-6cc1-42ff-96d9-b7b162ed0b85",
+  "meta": {
+    "instanceId": "98bfed1c0f22fa9e07d0e38dc58da94b0281d63095bd4ba14894d42a90a063e3"
+  },
+  "id": "wwAyq1icW1PJzyXS",
+  "tags": []
+}

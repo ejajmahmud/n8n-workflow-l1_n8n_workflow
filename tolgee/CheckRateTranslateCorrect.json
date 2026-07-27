@@ -1,0 +1,526 @@
+{
+  "name": "CheckRateTranslateCorrect",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "=https://tolgee.sabagame.com/v2/projects/{{ $('FilterNamespace').item.json.project }}/languages?size=500",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "filterNamespace",
+              "value": "={{ [$json.name]}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -220,
+        120
+      ],
+      "id": "cc3a1f9a-aed7-4a8d-92b2-15c0dbc7f631",
+      "name": "GetLanguages",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "VWtLpVxouEBsq6hZ",
+          "name": "tolgee"
+        },
+        "httpHeaderAuth": {
+          "id": "38GHDtQkTfqjRDxD",
+          "name": "Tolgee n8n agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://tolgee.sabagame.com/v2/projects/{{ $json.project }}/namespaces",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1260,
+        120
+      ],
+      "id": "69aaaef8-86a9-4ef0-adb1-8fa356f02bf7",
+      "name": "GetNamespaces",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "VWtLpVxouEBsq6hZ",
+          "name": "tolgee"
+        },
+        "httpHeaderAuth": {
+          "id": "38GHDtQkTfqjRDxD",
+          "name": "Tolgee n8n agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3dde3bac-1f2c-4a8d-8290-aa4056940545",
+              "leftValue": "={{ $json.page.totalPages }}",
+              "rightValue": 1,
+              "operator": {
+                "type": "number",
+                "operation": "lte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1080,
+        120
+      ],
+      "id": "b1de686b-88a3-43ad-8c64-9bb7919273af",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "url": "=https://tolgee.sabagame.com/v2/projects/{{ $('DefineProjects').item.json.project }}/namespaces",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "size",
+              "value": "={{ $json.page.totalElements }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -920,
+        240
+      ],
+      "id": "8d5329ce-6b46-485d-ab38-c2db489f2aa4",
+      "name": "GetNamespaces2",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "VWtLpVxouEBsq6hZ",
+          "name": "tolgee"
+        },
+        "httpHeaderAuth": {
+          "id": "38GHDtQkTfqjRDxD",
+          "name": "Tolgee n8n agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "_embedded.namespaces",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -760,
+        240
+      ],
+      "id": "fbd71636-5010-4d5a-ab2a-156fd61e8bd2",
+      "name": "Split Out2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const old =\n  {\n    \"result\": [\n  1003349070,\n  1003349073,\n  1003349118,\n  1000056003,\n  1000056004,\n  1000056005,\n  1000056006,\n  1000056007,\n  1000056008,\n  1000056009,\n  1000056010,\n  1000056011,\n  1000056012,\n  1000056013,\n  1000056014,\n  1000056015,\n  1000056016,\n  1000056017,\n  1000056018,\n  1000056019,\n  1000056020,\n  1000056021,\n  1000056022,\n  1000056023,\n  1000056024,\n  1000056026,\n  1000056027,\n  1000056028,\n  1000056029,\n  1000056054,\n  1000056055,\n  1000094002,\n  1000124003,\n  1000124007,\n  1000124012,\n  1000124022,\n  1000124024,\n  1000486004,\n  1000486007,\n  1000486008,\n  1000486013,\n  1000486015,\n  1000486018,\n  1000486024,\n  1000486027,\n  1000486029,\n  1000486031,\n  1000486034,\n  1000486037,\n  1000486038,\n  1000486043,\n  1000486050,\n  1000486059,\n  1000486062,\n  1000486063,\n  1002305003,\n  1002305021,\n  1003349003,\n  1003349006,\n  1003349009,\n  1003349015,\n  1003349018,\n  1003349020,\n  1003349024,\n  1003349029,\n  1003349031,\n  1003349034,\n  1003349038,\n  1003349040,\n  1003349042,\n  1003349045,\n  1003349048,\n  1003349051,\n  1003349052,\n  1003349057,\n  1003349060,\n  1003349063,\n  1003349066,\n  1003349076,\n  1003349086,\n  1003349087,\n  1003349091,\n  1003349092,\n  1000056001,\n  1000056025,\n  1000056030,\n  1000056031,\n  1000056032,\n  1000056033,\n  1000056034,\n  1000056035,\n  1000056036,\n  1000056037,\n  1000056038,\n  1000056039,\n  1000056040,\n  1000056041,\n  1000056042,\n  1000056043,\n  1000056044,\n  1000056045,\n  1000056046,\n  1000056047,\n  1000056048,\n  1000056052,\n  1000056053,\n  1000094001,\n  1000094003,\n  1000094004,\n  1000121001,\n  1000124002,\n  1000124005,\n  1000124008,\n  1000124010,\n  1000124013,\n  1000124017,\n  1000124018,\n  1000124019,\n  1000124021,\n  1000486003,\n  1000486006,\n  1000486010,\n  1000486014,\n  1000486017,\n  1000486023,\n  1000486028,\n  1000486030,\n  1000486033,\n  1000486039,\n  1000486040,\n  1000486044,\n  1000486048,\n  1000486051,\n  1000486054,\n  1000486055,\n  1000486056,\n  1000486057,\n  1002305002,\n  1002305004,\n  1002305005,\n  1002305006,\n  1002305007,\n  1002305008,\n  1002305009,\n  1002305010,\n  1002305011,\n  1002305012,\n  1002305013,\n  1002305014,\n  1002305015,\n  1002305016,\n  1002305017,\n  1002305018,\n  1002305022,\n  1003349002,\n  1003349005,\n  1003349008,\n  1003349011,\n  1003349013,\n  1003349014,\n  1003349016,\n  1003349021,\n  1003349022,\n  1003349025,\n  1003349028,\n  1003349030,\n  1003349032,\n  1003349035,\n  1003349036,\n  1003349043,\n  1003349047,\n  1003349053,\n  1003349054,\n  1003349056,\n  1003349059,\n  1003349062,\n  1003349065,\n  1003349072,\n  1003349075,\n  1003349081,\n  1003349083,\n  1003349085,\n  1003349089,\n  1000006001,\n  1000056050,\n  1000056051,\n  1000091001,\n  1000124001,\n  1000124006,\n  1000124009,\n  1000124011,\n  1000124014,\n  1000124020,\n  1000124023,\n  1000486001,\n  1000486002,\n  1000486005,\n  1000486011,\n  1000486012,\n  1000486016,\n  1000486022,\n  1000486025,\n  1000486026,\n  1000486032,\n  1000486035,\n  1000486036,\n  1000486041,\n  1000486042,\n  1000486047,\n  1000486049,\n  1000486058,\n  1000486060,\n  1000486061,\n  1002305001,\n  1002305019,\n  1002305020,\n  1003349001,\n  1003349004,\n  1003349007,\n  1003349010,\n  1003349012,\n  1003349017,\n  1003349019,\n  1003349023,\n  1003349027,\n  1003349033,\n  1003349037,\n  1003349039,\n  1003349041,\n  1003349044,\n  1003349049,\n  1003349050,\n  1003349055,\n  1003349058,\n  1003349061,\n  1003349064,\n  1003349074,\n  1003349080,\n  1003349082,\n  1003349084,\n  1003349088,\n  1003349078,\n  1003349079,\n  1003349093,\n  1003349094,\n  1003349095,\n  1003349096,\n  1003349097,\n  1003349098,\n  1003349099,\n  1003349100,\n  1003349101,\n  1003349102,\n  1003349103,\n  1003349104,\n  1003349105,\n  1003349106,\n  1003349107,\n  1003349108,\n  1003349109,\n  1003349110,\n  1003349111,\n  1003349112,\n  1003349113,\n  1003349114,\n  1003349115\n]\n  }\nconst oldNameSpace = new Set(old.result)\nconst items = []\nfor (const item of $input.all()) {\n  if (!oldNameSpace.has(item.json.id)) {\n    items.push(item.json)\n  }\n}\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -400,
+        120
+      ],
+      "id": "b726f408-63ac-4e1e-9803-9be285ea3a7b",
+      "name": "FilterNamespace"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Add a new field called 'myNewField' to the JSON of the item\n$json.project = $('Trigger').item.json.project\n$json.languageBase = $('Trigger').item.json.languageBase\n\nreturn $json;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -600,
+        120
+      ],
+      "id": "0623e6a6-0744-4391-9e30-efd1d489d8a2",
+      "name": "FormatItem"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "_embedded.namespaces",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -840,
+        60
+      ],
+      "id": "709311c1-b67a-4ddf-aa65-59dc35b43428",
+      "name": "Split Out3"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "project",
+              "type": "number"
+            },
+            {
+              "name": "languageBase",
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1460,
+        120
+      ],
+      "id": "cdd9812d-bb7d-4f69-bb68-960f8856b1a4",
+      "name": "Trigger"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "_embedded.languages",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -60,
+        120
+      ],
+      "id": "35c94e80-a8cc-4a93-82db-97cdc75a9250",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "url": "=https://tolgee.sabagame.com/v2/projects/{{ $('FilterNamespace').item.json.project }}/translations?filterState={{ $json.tag }},REVIEWED&languages={{ $json.tag }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "filterNamespace",
+              "value": "={{ [$('FilterNamespace').item.json.name] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        120,
+        120
+      ],
+      "id": "1b12b3f5-03a6-4636-85f3-5dbf29328088",
+      "name": "GetKeys2",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "VWtLpVxouEBsq6hZ",
+          "name": "tolgee"
+        },
+        "httpHeaderAuth": {
+          "id": "38GHDtQkTfqjRDxD",
+          "name": "Tolgee n8n agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "79fbf164-e815-4573-a487-4e9ff081ccaa",
+              "name": "keys",
+              "value": "={{ $json._embedded.keys }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        300,
+        120
+      ],
+      "id": "e12449ba-6f32-4530-b745-eedf14b877e0",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "url": "=https://tolgee.sabagame.com/v2/projects/{{ $('FilterNamespace').first().json.project }}/translations/{{ $json.id }}/history",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        740,
+        120
+      ],
+      "id": "19ba3cdb-5c07-4c89-9355-9e801d5a7f2f",
+      "name": "GetKeys3",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "VWtLpVxouEBsq6hZ",
+          "name": "tolgee"
+        },
+        "httpHeaderAuth": {
+          "id": "38GHDtQkTfqjRDxD",
+          "name": "Tolgee n8n agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const translation = []\nfor (const item of $input.all().map(x=>x.json)) {\n  for (const key of item.keys ?? []) {\n    for (const tag of Object.keys(key.translations)) {\n      translation.push({\n        id: key.translations[tag].id\n      })\n    }\n  }\n}\n\nreturn translation;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        520,
+        120
+      ],
+      "id": "3e80ffba-7392-4797-9a3d-008757d99a65",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "jsCode": "let sum = 0;\nlet modify = 0;\nfor (const item of $input.all().map(x=>x.json._embedded.revisions)) {\n  if (item[0].author.username == item[0].author.username) {\n    modify += 1\n  }\n  sum += 1\n}\n\nreturn {\n  rate: (modify/sum)*100\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        980,
+        120
+      ],
+      "id": "999fa3ed-3ea7-4757-8bdc-7b60a4f47f6e",
+      "name": "Code2"
+    }
+  ],
+  "pinData": {
+    "Trigger": [
+      {
+        "json": {
+          "project": 7,
+          "languageBase": "en"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "GetLanguages": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetNamespaces": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Split Out3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GetNamespaces2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetNamespaces2": {
+      "main": [
+        [
+          {
+            "node": "Split Out2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out2": {
+      "main": [
+        [
+          {
+            "node": "FormatItem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FilterNamespace": {
+      "main": [
+        [
+          {
+            "node": "GetLanguages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FormatItem": {
+      "main": [
+        [
+          {
+            "node": "FilterNamespace",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out3": {
+      "main": [
+        [
+          {
+            "node": "FormatItem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "GetNamespaces",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "GetKeys2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetKeys2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "GetKeys3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetKeys3": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "eb1036c7-ec77-4ad0-92fc-55692983fc92",
+  "meta": {
+    "instanceId": "98bfed1c0f22fa9e07d0e38dc58da94b0281d63095bd4ba14894d42a90a063e3"
+  },
+  "id": "rsLNmyGMq1NaaGxd",
+  "tags": []
+}

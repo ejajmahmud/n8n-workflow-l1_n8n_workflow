@@ -1,0 +1,151 @@
+{
+  "name": "RequestGamePost",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "saba-review2/blog",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "7c8b012d-068c-446d-9f1d-1c12f12db04c",
+      "name": "Webhook",
+      "webhookId": "a74072c4-6eab-4b32-aee5-003e66e698cb"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "eLVQ7xAf9O2npQXj",
+          "mode": "list",
+          "cachedResultName": "RewriteByAuthor"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "gameName": "={{ $json.body.gameName }}",
+            "author": "={{ $json.body.author }}",
+            "authorType": "={{ $json.body.authorType }}",
+            "style": "={{ $json.body.style }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "gameName",
+              "displayName": "gameName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "author",
+              "displayName": "author",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "authorType",
+              "displayName": "authorType",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "style",
+              "displayName": "style",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        0
+      ],
+      "id": "ae7f8163-15b4-4d16-a6ec-7ec5faa6eec6",
+      "name": "Execute Workflow"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n.lumigame.com",
+            "content-length": "90",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36 Edg/137.0.0.0",
+            "sec-ch-ua": "\"Microsoft Edge\";v=\"137\", \"Chromium\";v=\"137\", \"Not/A)Brand\";v=\"24\"",
+            "content-type": "application/json",
+            "sec-ch-ua-mobile": "?0",
+            "accept": "*/*",
+            "origin": "https://n8n.lumigame.com",
+            "sec-fetch-site": "same-origin",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-dest": "empty",
+            "referer": "https://n8n.lumigame.com/webhook/saba-review2/admin",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "en-US,en;q=0.9",
+            "priority": "u=1, i",
+            "cookie": "_ga=GA1.1.1433622053.1734582047; _ga_KBPRBYLF2W=GS1.1.1738916859.4.1.1738917481.0.0.0; rl_page_init_referrer=RudderEncrypt%3AU2FsdGVkX19jGpE%2BNzR%2BU6Z3Wl45xo%2Bigp11Q7FAXJk%3D; rl_page_init_referring_domain=RudderEncrypt%3AU2FsdGVkX1%2FQrd0RpR%2FKtwUaXlY0lByC5usxSf8fivw%3D; _ga_JHKMX35LM3=GS1.1.1741746651.1.1.1741748366.0.0.0; _ga_GJDD3FENTH=GS2.1.s1748948608$o59$g0$t1748948608$j60$l0$h0; n8n-auth=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjI1MjAyZjhjLTkxZTctNDRmMS1hNTMwLTg5ODllY2ZmN2UzNiIsImhhc2giOiJYZWZMVXlYNG1KIiwiYnJvd3NlcklkIjoiblQ1bno5TExic0IxK0FsREVEVTc5N2hhci9SRWZWbDZaYlVsSVNOdUhvST0iLCJpYXQiOjE3NDk0MzQ2NzksImV4cCI6MTc1MDAzOTQ3OX0.HmyHs_TXlm44410NTF2PLAkSOEazwp4le7SKMsGYFnA; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX187FM%2B0wJ%2Ft%2B32UjCZAsHXJHaxzTKLIalZdRsAYFUQo1SgXsTfUblBjtRZHwG4oJI0pcS3ZDDt7iw%3D%3D; rl_user_id=RudderEncrypt%3AU2FsdGVkX182Wc92y1NNjhe0yDemPMqi59pVDSOQUyRZhCTXoJoag4VFdvdaz8mB298H4cyNGXw4k5%2FUV7hriUyI2PAOkNljMf4GDWDnmARaG7YIFg53mUP2LSn%2FzS%2BeIYrwyY4BE3G8r%2BgCJBJU5M%2BQu8A%2Bgj2i4Ie4WMG6tZw%3D; rl_trait=RudderEncrypt%3AU2FsdGVkX19ilakSYAj8ox5A3GgLXjIJrtCOfdbtv0nbdlSshjb5firdIeg9PtYwuC5L59nDXk0knepbG1aANtArm%2BdgVbpHwJatIibCLCI3Ee8yFUqzrSDYMdjkpART6xmSqD%2FxtLfP87yodek7wQ%3D%3D; rl_session=RudderEncrypt%3AU2FsdGVkX1%2FREgWlUxB6ztCXt7XLJ7Aj4V4UArrLHI2qNrkLfCn51TwMj7gBYcBMzXprSvzkG6lDgf8nUN4c9ONDD2KQsedu9NxOOaQJuqMf9fimpMwcTY0MAoFnI7Q8phA4AKesoKBH6s9NaERBrw%3D%3D; ph_phc_4URIAm1uYfJO7j8kWSe0J8lc8IqnstRLS7Jx8NcakHo_posthog=%7B%22distinct_id%22%3A%2298bfed1c0f22fa9e07d0e38dc58da94b0281d63095bd4ba14894d42a90a063e3%2325202f8c-91e7-44f1-a530-8989ecff7e36%22%2C%22%24sesid%22%3A%5Bnull%2Cnull%2Cnull%5D%2C%22%24epp%22%3Atrue%2C%22%24initial_person_info%22%3A%7B%22r%22%3A%22%24direct%22%2C%22u%22%3A%22https%3A%2F%2Fn8n.lumigame.com%2Fsignout%22%7D%7D",
+            "x-forwarded-proto": "https",
+            "x-forwarded-for": "10.10.100.250"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "gameName": "Sweet Bonanza",
+            "author": "ComedianHaha",
+            "authorType": "new",
+            "style": "Humorous"
+          },
+          "webhookUrl": "https://n8n.lumigame.com/webhook/a74072c4-6eab-4b32-aee5-003e66e698cb",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "bbe42fb0-6aed-48ae-a549-153fb84f8779",
+  "meta": {
+    "instanceId": "98bfed1c0f22fa9e07d0e38dc58da94b0281d63095bd4ba14894d42a90a063e3"
+  },
+  "id": "kq7XgbHUn9a3MnvZ",
+  "tags": []
+}

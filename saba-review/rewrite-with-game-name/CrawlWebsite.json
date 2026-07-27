@@ -1,0 +1,144 @@
+{
+  "name": "CrawlWebsite",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "url"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -440,
+        -280
+      ],
+      "id": "b07aece9-e806-4095-821b-0387c882c607",
+      "name": "TriggerNode"
+    },
+    {
+      "parameters": {
+        "content": "## Trigger from other workflow\nInput:\n```json\n{\n \"url\": url of webpage to crawl\n}\n```",
+        "height": 340,
+        "width": 400
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -660,
+        -460
+      ],
+      "typeVersion": 1,
+      "id": "745f6cfd-8123-4393-8194-537e535bedac",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://n8n-crawl4ai.lumigame.com/crawl",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"urls\": [\n    \"{{$json.url}}\"\n  ],\n  \"crawler_config\": {\n    \"type\": \"CrawlerRunConfig\",\n    \"params\": {\n      \"only_text\": true,\n      \"scraping_strategy\": {\n        \"type\": \"WebScrapingStrategy\",\n        \"params\": {}\n      },\n      \"exclude_social_media_domains\": [\n        \"facebook.com\",\n        \"twitter.com\",\n        \"x.com\",\n        \"linkedin.com\",\n        \"instagram.com\",\n        \"pinterest.com\",\n        \"tiktok.com\",\n        \"snapchat.com\",\n        \"reddit.com\"\n      ]\n    }\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        0,
+        -280
+      ],
+      "id": "af3e82f1-1e5a-4636-8e55-3e1eeb163958",
+      "name": "Call Crawl Use Crawl4AI Service"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const images = []\nfor (const item of $json.results[0].media.images){\n  let src = item.src\n  if (item.src.startsWith(\"/\")) {\n    \n  const origin = $(\"TriggerNode\").item.json.url.split(\"/\").slice(0, 3).join(\"/\");\n\n    src = `${origin}${item.src}`\n  }\n  images.push({\n    alt: item.alt,\n    src\n  })\n}\nreturn {\n  content: $json.results[0].markdown.raw_markdown,\n  images\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        380,
+        -280
+      ],
+      "id": "28bbeb5a-6b54-43b8-b2de-b722a2871a4c",
+      "name": "FilterOutput"
+    },
+    {
+      "parameters": {
+        "content": "The service output includes a lot of data, and we need to extract the relevant parts to handle the task.",
+        "height": 320,
+        "width": 320
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        300,
+        -420
+      ],
+      "typeVersion": 1,
+      "id": "ceeda711-9cff-440f-a9a0-7358e76ccbe0",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "We use the self-hosted Crawl4AI service for crawling. It supports using LLMs to extract data, but in our case, we don't need LLM-based extraction. You can refer to [Crawl4AI documentation](https://docs.crawl4ai.com) for more information.",
+        "height": 420,
+        "width": 380
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -160,
+        -460
+      ],
+      "typeVersion": 1,
+      "id": "db342ed5-f44b-4994-afbd-796e26e64907",
+      "name": "Sticky Note2"
+    }
+  ],
+  "pinData": {
+    "TriggerNode": [
+      {
+        "json": {
+          "url": "https://www.aboutslots.com/casino-slots/chaos-crew-2"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "TriggerNode": {
+      "main": [
+        [
+          {
+            "node": "Call Crawl Use Crawl4AI Service",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Crawl Use Crawl4AI Service": {
+      "main": [
+        [
+          {
+            "node": "FilterOutput",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "da94448f-e605-4352-b611-690dcea54e8e",
+  "meta": {
+    "instanceId": "98bfed1c0f22fa9e07d0e38dc58da94b0281d63095bd4ba14894d42a90a063e3"
+  },
+  "id": "Z98kSDtYNiNlFI0h",
+  "tags": []
+}

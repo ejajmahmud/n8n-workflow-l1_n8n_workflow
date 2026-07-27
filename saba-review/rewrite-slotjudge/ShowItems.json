@@ -1,0 +1,266 @@
+{
+  "name": "ShowItems",
+  "nodes": [
+    {
+      "parameters": {
+        "command": "cd /tmp/n8n_rewrite/new && ls"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        120,
+        -140
+      ],
+      "id": "049d94ee-7652-4cd5-9ab9-6fc33dff627f",
+      "name": "Execute Command"
+    },
+    {
+      "parameters": {
+        "path": "slotjudge-clone",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        -60
+      ],
+      "id": "15fcdb0c-04d9-4e30-9baa-c452158030a9",
+      "name": "Webhook",
+      "webhookId": "e2219f60-35ae-485c-909f-77bce41e5f42"
+    },
+    {
+      "parameters": {
+        "command": "cd /tmp/n8n_rewrite/raw && ls"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        100,
+        80
+      ],
+      "id": "f72180d7-83f6-45b5-a38d-001682fabf1f",
+      "name": "Execute Command1"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const fileRaws = $json.stdout.split(\"\\n\")\nconst files = fileRaws.map((x)=>{\n  const nameArr = x.replaceAll(\".md\",\"\").split(\"=\");\n  return {\n    name: x,\n    date: nameArr[1]\n  }\n})\n\nreturn {\n  new: files,\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        360,
+        -140
+      ],
+      "id": "844c4ef7-a741-4a57-8f2a-8fe51ccc0805",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const fileRaws = $json.stdout.split(\"\\n\")\nconst files = fileRaws.map((x)=>{\n  const nameArr = x.replaceAll(\".md\",\"\").split(\"=\");\n  return {\n    name: x,\n    date: nameArr[1]\n  }\n})\n\n\nreturn {\n  raw: files\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        360,
+        80
+      ],
+      "id": "6ee9aca2-b4c3-4128-8abe-e2027b2f207f",
+      "name": "Code1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        580,
+        -60
+      ],
+      "id": "f9d808d7-abb1-4a4a-a952-a9634b2a68dd",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "let result = {}\nconst template = `\n<li>\n  <a href=\"get-md?name={{name}}\">\n    <strong>{{name}}</strong>\n  </a>\n</li>\n`\nfunction render (item) {\n  const html = template.replaceAll(\"{{name}}\", item.name);\n  \n  return html;\n};\n\nfor (const item of $input.all()) {\n  if (item.json.new) {\n    result = {\n      ...result,\n      new: item.json.new.map((x)=>render(x))\n    }\n  }\n  else {\n    result = {\n      ...result,\n      raw: item.json.raw.map((x)=>render(x))\n    }\n  }\n}\n\nreturn result;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        760,
+        -60
+      ],
+      "id": "6e0eff94-8f57-46bd-acda-2d80c1b0d94c",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "html": "<!DOCTYPE html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Collections Page</title>\n    <link\n      rel=\"stylesheet\"\n      href=\"https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css\"\n    />\n    <style>\n      /* Add more space between list items */\n      .box ul li {\n        margin-bottom: 1.25rem; /* Adjust as needed */\n      }\n      /* Remove margin from the last item */\n      .box ul li:last-child {\n        margin-bottom: 0;\n      }\n      /* Highlight effect on hover */\n      .box ul li a {\n        display: block;\n        padding: 0.75rem 1rem;\n        border-radius: 8px;\n        transition: background 0.2s, box-shadow 0.2s;\n        color: inherit;\n        text-decoration: none;\n      }\n      .box ul li a:hover,\n      .box ul li a:focus {\n        background: #f5f5f5;\n        box-shadow: 0 2px 8px rgba(10, 10, 10, 0.05);\n        color: #363636;\n        text-decoration: none;\n      }\n    </style>\n  </head>\n  <body>\n    <section class=\"section\">\n      <div class=\"container\">\n        <h1 class=\"title\">Collections</h1>\n        <div class=\"columns\">\n          <!-- Raw Collection -->\n          <div class=\"column\">\n            <h2\n              class=\"subtitle has-text-weight-bold is-size-4 has-text-primary mb-4\"\n            >\n              Raw\n            </h2>\n            <div class=\"box\">\n              <ul>\n                {{ $json.raw.join(\"\") }}\n              </ul>\n            </div>\n          </div>\n          <!-- New Collection -->\n          <div class=\"column\">\n            <h2\n              class=\"subtitle has-text-weight-bold is-size-4 has-text-link mb-4\"\n            >\n              New\n            </h2>\n            <div class=\"box\">\n              <ul>\n                {{ $json.new.join(\"\") }}\n              </ul>\n            </div>\n          </div>\n        </div>\n      </div>\n    </section>\n  </body>\n</html>"
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        980,
+        -60
+      ],
+      "id": "31d69b67-1737-4457-974f-745f229cdaaa",
+      "name": "HTML"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.html }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1200,
+        -60
+      ],
+      "id": "ec11379e-20eb-4baf-8b8a-dc07c3e88025",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n.lumigame.com",
+            "cache-control": "max-age=0",
+            "sec-ch-ua": "\"Chromium\";v=\"136\", \"Microsoft Edge\";v=\"136\", \"Not.A/Brand\";v=\"99\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "upgrade-insecure-requests": "1",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0",
+            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            "sec-fetch-site": "none",
+            "sec-fetch-mode": "navigate",
+            "sec-fetch-user": "?1",
+            "sec-fetch-dest": "document",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "en-US,en;q=0.9",
+            "if-none-match": "W/\"c56-q6GqA8KYMr80va8eqIxPcylAeY0\"",
+            "priority": "u=0, i",
+            "cookie": "_ga=GA1.1.1433622053.1734582047; _ga_KBPRBYLF2W=GS1.1.1738916859.4.1.1738917481.0.0.0; rl_page_init_referrer=RudderEncrypt%3AU2FsdGVkX19jGpE%2BNzR%2BU6Z3Wl45xo%2Bigp11Q7FAXJk%3D; rl_page_init_referring_domain=RudderEncrypt%3AU2FsdGVkX1%2FQrd0RpR%2FKtwUaXlY0lByC5usxSf8fivw%3D; _ga_JHKMX35LM3=GS1.1.1741746651.1.1.1741748366.0.0.0; _ga_GJDD3FENTH=GS2.1.s1746600249$o56$g0$t1746600249$j0$l0$h0; n8n-auth=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjI1MjAyZjhjLTkxZTctNDRmMS1hNTMwLTg5ODllY2ZmN2UzNiIsImhhc2giOiJYZWZMVXlYNG1KIiwiYnJvd3NlcklkIjoibFA0OUs4czUxdFQ0aHZPalZvQ3h0Mlc3dlVlRm5uNzJxSHBFVnlIeTFZQT0iLCJpYXQiOjE3NDc3MDYxNzUsImV4cCI6MTc0ODMxMDk3NX0.hhSVcUrmdpX8KqawUvCvT3cgnGq5xsfasbFp3zI7UGQ; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX18v3atayGXIPH3WZZQ52nYg7uQD5%2Fgy0aKAzbIzPeWE7ENQCdWBoeq6GaChumIkJoIGPwcpureV%2Bw%3D%3D; rl_user_id=RudderEncrypt%3AU2FsdGVkX1%2BVi%2BjLVre0cKBZjDNtG%2Bqvl4iXVYWNjuHJeWboid8WNDrA8X7aJ58zWubzYAd5Obh1U6%2B1OK0YHE0DQcDPZeEEVkwf0FDUt%2FyNryWtM%2F4UsdSCQql1SjK4wFckct67%2BSIDR5zYq7kCgKdk5qwaoSGJwuvifEEIEdk%3D; rl_trait=RudderEncrypt%3AU2FsdGVkX19R7s02MP9jpNWWoZ0PiaxMyAioCxMQ1BThEMvLqbJunHJmie%2F2WVkAYxloZKnIRzQxVLXg96rxD5%2B7M4wTajtKA890Fiw9XG4pE2%2BQpe3sNWpYlQhLDHtnkjb9Gq1AeWusICccBfLUzQ%3D%3D; ph_phc_4URIAm1uYfJO7j8kWSe0J8lc8IqnstRLS7Jx8NcakHo_posthog=%7B%22distinct_id%22%3A%2298bfed1c0f22fa9e07d0e38dc58da94b0281d63095bd4ba14894d42a90a063e3%2325202f8c-91e7-44f1-a530-8989ecff7e36%22%2C%22%24sesid%22%3A%5B1747997712709%2C%220196fc54-ab1d-7610-bdc9-4b2ce849594d%22%2C1747990129436%5D%2C%22%24epp%22%3Atrue%2C%22%24initial_person_info%22%3A%7B%22r%22%3A%22%24direct%22%2C%22u%22%3A%22https%3A%2F%2Fn8n.lumigame.com%2Fhome%2Fworkflows%22%7D%7D; rl_session=RudderEncrypt%3AU2FsdGVkX1%2BoHRuPvHZIE0Txy6%2BzEa0qBUncL6t%2BRlbSw92NNjEsj%2FGC87Vpe0E3dHenwpwWsBvqWM%2FFxMpUf8yiQxcAo3G93RDKjB8uHnV2YQ%2FEc89K%2Fd9xdXHtFvpvwfwtY1qEUGz7VoCYFaEJWQ%3D%3D",
+            "x-forwarded-proto": "https",
+            "x-forwarded-for": "10.10.100.250"
+          },
+          "params": {},
+          "query": {},
+          "body": {},
+          "webhookUrl": "https://n8n.lumigame.com/webhook/e2219f60-35ae-485c-909f-77bce41e5f42",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Execute Command": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command1": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Execute Command",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Execute Command1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "21f8b2bf-3bf3-47f8-ac61-f48427c1ef06",
+  "meta": {
+    "instanceId": "98bfed1c0f22fa9e07d0e38dc58da94b0281d63095bd4ba14894d42a90a063e3"
+  },
+  "id": "F10uXrCC4zV2yAIV",
+  "tags": []
+}

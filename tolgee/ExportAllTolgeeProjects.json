@@ -1,0 +1,228 @@
+{
+  "name": "ExportAllTolgeeProjects",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -340,
+        -40
+      ],
+      "id": "38d6ebe6-8d61-4c22-a9ea-3d512275852a",
+      "name": "Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://tolgee.sabagame.com/v2/projects?size=100",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -180,
+        -40
+      ],
+      "id": "c44ab4a8-dc4e-41f6-9a9b-a129b950928e",
+      "name": "GetAllProjects",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "38GHDtQkTfqjRDxD",
+          "name": "Tolgee n8n agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return JSON.parse($json.data);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -20,
+        -40
+      ],
+      "id": "af1ae65d-3c8b-4e13-906d-28dfd7a37e67",
+      "name": "ParseData"
+    },
+    {
+      "parameters": {
+        "url": "=https://tolgee.sabagame.com/v2/projects/{{ $json.project }}/languages?size=100 ",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        500,
+        -40
+      ],
+      "id": "cc8a6790-05d4-4825-8f5f-6428479d7fca",
+      "name": "GetLanguages",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "38GHDtQkTfqjRDxD",
+          "name": "Tolgee n8n agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const queryLang = $json._embedded.languages.map((x)=>`languages=${x.tag}`).join(\"&\")\n\nreturn {\n  queryLang\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        -40
+      ],
+      "id": "cf9a9ffb-239e-40b3-8c3c-eba31010c673",
+      "name": "GenerateQuery"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "_embedded.projects",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        140,
+        -40
+      ],
+      "id": "97ca5a84-9e9b-48fd-ab08-f5fca8ffd04f",
+      "name": "Split"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return {\n  project: $json.id\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        -40
+      ],
+      "id": "20ebb98b-e08c-4cef-bc61-4c27d9b560e2",
+      "name": "Predefine"
+    },
+    {
+      "parameters": {
+        "url": "=https://tolgee.sabagame.com/v2/projects/{{ $('Predefine').item.json.project }}/export?size=100&{{ $json.queryLang }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        800,
+        -40
+      ],
+      "id": "f9285a2d-b4b4-45db-a7b1-6d6787a76d97",
+      "name": "Export",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "38GHDtQkTfqjRDxD",
+          "name": "Tolgee n8n agent"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "GetAllProjects",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetAllProjects": {
+      "main": [
+        [
+          {
+            "node": "ParseData",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ParseData": {
+      "main": [
+        [
+          {
+            "node": "Split",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetLanguages": {
+      "main": [
+        [
+          {
+            "node": "GenerateQuery",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split": {
+      "main": [
+        [
+          {
+            "node": "Predefine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GenerateQuery": {
+      "main": [
+        [
+          {
+            "node": "Export",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Predefine": {
+      "main": [
+        [
+          {
+            "node": "GetLanguages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f31c2bbe-10c8-4d85-8966-054f5ebc9fb9",
+  "meta": {
+    "instanceId": "98bfed1c0f22fa9e07d0e38dc58da94b0281d63095bd4ba14894d42a90a063e3"
+  },
+  "id": "m3jzpUDjO53Nj9Mf",
+  "tags": []
+}

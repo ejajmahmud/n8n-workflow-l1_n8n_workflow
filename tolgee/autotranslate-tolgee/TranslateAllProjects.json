@@ -1,0 +1,166 @@
+{
+  "name": "TranslateAllProjects",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -20,
+        -60
+      ],
+      "id": "6ae202de-21ac-49c8-900f-9d9decde6797",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "const projects = [{\n  project: 7,\n  languageBase: \"en\"\n}, {\n  project: 6,\n  languageBase: \"en-US\"\n},                {\n  project: 5,\n  languageBase: \"en\"\n}, {\n  project: 2,\n  languageBase: \"en\"\n},{\n  project: 8,\n  languageBase: \"en\"\n}]\n\nreturn projects;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        0
+      ],
+      "id": "c7603ea7-e40d-433c-8b5f-4c092b7de24f",
+      "name": "DefineProjects"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "yMctYSkK0i5aSAms",
+          "mode": "list",
+          "cachedResultName": "TranslateProject"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "project": "={{ $json.project }}",
+            "languageBase": "={{ $json.languageBase }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "project",
+              "displayName": "project",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number"
+            },
+            {
+              "id": "languageBase",
+              "displayName": "languageBase",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "each",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        340,
+        0
+      ],
+      "id": "0abbab69-2f50-4a28-87a8-1038f3e98794",
+      "name": "Execute Workflow"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        180
+      ],
+      "id": "3e04d201-9346-4e7a-b05b-0067f33808b0",
+      "name": "Error Trigger"
+    }
+  ],
+  "pinData": {
+    "Schedule Trigger": [
+      {
+        "json": {
+          "timestamp": "2025-05-16T17:44:52.011+07:00",
+          "Readable date": "May 16th 2025, 5:44:52 pm",
+          "Readable time": "5:44:52 pm",
+          "Day of week": "Friday",
+          "Year": "2025",
+          "Month": "May",
+          "Day of month": "16",
+          "Hour": "17",
+          "Minute": "44",
+          "Second": "52",
+          "Timezone": "Asia/Ho_Chi_Minh (UTC+07:00)"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "DefineProjects",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DefineProjects": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "DefineProjects",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1,
+    "errorWorkflow": "K1zoqI8KmtFsIdqA"
+  },
+  "versionId": "23fba2bf-2dbd-45c0-8e55-8492ddbd8ae5",
+  "meta": {
+    "instanceId": "98bfed1c0f22fa9e07d0e38dc58da94b0281d63095bd4ba14894d42a90a063e3"
+  },
+  "id": "K1zoqI8KmtFsIdqA",
+  "tags": []
+}

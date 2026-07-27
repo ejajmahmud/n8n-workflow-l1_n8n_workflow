@@ -1,0 +1,181 @@
+{
+  "name": "SabaReviewStatic",
+  "nodes": [
+    {
+      "parameters": {
+        "html": "<!DOCTYPE html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n    <title>Game Review</title>\n    <script src=\"https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4\"></script>\n  </head>\n  <body class=\"bg-gray-100 min-h-screen flex items-center justify-center\">\n    <div class=\"bg-white p-8 rounded-lg shadow-md w-full max-w-md\">\n      <h1 class=\"text-2xl font-bold text-gray-800 mb-6 text-center\">\n        Game Review\n      </h1>\n      <form id=\"gameForm\" class=\"space-y-4\">\n        <div>\n          <label\n            for=\"gameName\"\n            class=\"block text-sm font-medium text-gray-700 mb-1\"\n            >Game Name</label\n          >\n          <input\n            type=\"text\"\n            id=\"gameName\"\n            name=\"gameName\"\n            required\n            class=\"w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition\"\n            placeholder=\"Enter game name\"\n          />\n        </div>\n        <div>\n          <label\n            for=\"authorType\"\n            class=\"block text-sm font-medium text-gray-700 mb-1\"\n            >Author Type</label\n          >\n          <select\n            id=\"authorType\"\n            name=\"authorType\"\n            required\n            class=\"w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition\"\n          >\n            <option value=\"new\">Create New Author</option>\n            <option value=\"existing\">Choose Existing Author</option>\n          </select>\n        </div>\n        <div id=\"newAuthorSection\">\n          <label\n            for=\"author\"\n            class=\"block text-sm font-medium text-gray-700 mb-1\"\n            >New Author</label\n          >\n          <input\n            type=\"text\"\n            id=\"author\"\n            name=\"author\"\n            required\n            class=\"w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition\"\n            placeholder=\"Enter author name\"\n          />\n        </div>\n        <div id=\"existingAuthorSection\" style=\"display: none\">\n          <label\n            for=\"existingAuthor\"\n            class=\"block text-sm font-medium text-gray-700 mb-1\"\n            >Select Author</label\n          >\n          <select\n            id=\"existingAuthor\"\n            name=\"existingAuthor\"\n            class=\"w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition\"\n          >\n            <option value=\"\">Select an author...</option>\n          </select>\n        </div>\n        <div>\n          <label\n            for=\"style\"\n            class=\"block text-sm font-medium text-gray-700 mb-1\"\n            >Author Style</label\n          >\n          <textarea\n            id=\"style\"\n            name=\"style\"\n            required\n            rows=\"4\"\n            class=\"w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition resize-none\"\n            placeholder=\"Enter author style\"\n          ></textarea>\n        </div>\n        <button\n          type=\"submit\"\n          class=\"w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition\"\n        >\n          Submit\n        </button>\n      </form>\n    </div>\n\n    <script>\n      // Function to fetch authors from API\n      async function fetchAuthors() {\n        try {\n          const response = await fetch(\n            \"https://n8n.lumigame.com/webhook/saba-review2/authors\",\n          );\n          if (response.ok) {\n            const authors = await response.json();\n            const select = document.getElementById(\"existingAuthor\");\n            select.innerHTML = '<option value=\"\">Select an author...</option>';\n            authors.forEach((author) => {\n              const option = document.createElement(\"option\");\n              option.value = author.id;\n              option.textContent = author.name;\n              option.dataset.style = author.style;\n              select.appendChild(option);\n            });\n          }\n        } catch (error) {\n          console.error(\"Error fetching authors:\", error);\n        }\n      }\n\n      // Function to handle author type change\n      function handleAuthorTypeChange() {\n        const authorType = document.getElementById(\"authorType\").value;\n        const newAuthorSection = document.getElementById(\"newAuthorSection\");\n        const existingAuthorSection = document.getElementById(\n          \"existingAuthorSection\",\n        );\n        const authorInput = document.getElementById(\"author\");\n        const existingAuthorSelect = document.getElementById(\"existingAuthor\");\n        const styleTextarea = document.getElementById(\"style\");\n\n        if (authorType === \"new\") {\n          newAuthorSection.style.display = \"block\";\n          existingAuthorSection.style.display = \"none\";\n          authorInput.required = true;\n          existingAuthorSelect.required = false;\n          styleTextarea.disabled = false;\n          styleTextarea.classList.remove(\"bg-gray-100\", \"cursor-not-allowed\");\n        } else {\n          newAuthorSection.style.display = \"none\";\n          existingAuthorSection.style.display = \"block\";\n          authorInput.required = false;\n          existingAuthorSelect.required = true;\n          fetchAuthors();\n        }\n      }\n\n      // Function to handle existing author selection\n      function handleExistingAuthorChange() {\n        const select = document.getElementById(\"existingAuthor\");\n        const styleTextarea = document.getElementById(\"style\");\n        const selectedOption = select.options[select.selectedIndex];\n\n        if (selectedOption && selectedOption.dataset.style) {\n          styleTextarea.value = selectedOption.dataset.style;\n          styleTextarea.disabled = true;\n          styleTextarea.classList.add(\"bg-gray-100\", \"cursor-not-allowed\");\n        } else {\n          styleTextarea.value = \"\";\n          styleTextarea.disabled = false;\n          styleTextarea.classList.remove(\"bg-gray-100\", \"cursor-not-allowed\");\n        }\n      }\n\n      // Add event listeners\n      document\n        .getElementById(\"authorType\")\n        .addEventListener(\"change\", handleAuthorTypeChange);\n      document\n        .getElementById(\"existingAuthor\")\n        .addEventListener(\"change\", handleExistingAuthorChange);\n\n      // Function to validate author name\n      function validateAuthorName(name) {\n        return /^[a-zA-Z0-9\\s]+$/.test(name);\n      }\n\n      document\n        .getElementById(\"gameForm\")\n        .addEventListener(\"submit\", async (e) => {\n          e.preventDefault();\n\n          const gameName = document.getElementById(\"gameName\").value;\n          const authorType = document.getElementById(\"authorType\").value;\n          const author =\n            authorType === \"new\"\n              ? document.getElementById(\"author\").value\n              : document.getElementById(\"existingAuthor\").value;\n          const style = document.getElementById(\"style\").value;\n\n          // Validate author name\n          if (authorType === \"new\" && !validateAuthorName(author)) {\n            alert(\"Author name can only contain letters, numbers, and spaces.\");\n            return;\n          }\n\n          try {\n            const response = await fetch(\n              \"https://n8n.lumigame.com/webhook/saba-review2/blog\",\n              {\n                method: \"POST\",\n                headers: {\n                  \"Content-Type\": \"application/json\",\n                },\n                body: JSON.stringify({\n                  gameName,\n                  author,\n                  authorType,\n                  style,\n                }),\n              },\n            );\n\n            if (response.ok) {\n              alert(\"Game submitted successfully!\");\n              document.getElementById(\"gameName\").value = \"\";\n              document.getElementById(\"author\").value = \"\";\n              document.getElementById(\"style\").value = \"\";\n              document.getElementById(\"existingAuthor\").value = \"\";\n            } else {\n              alert(\"Error submitting game. Please try again.\");\n            }\n          } catch (error) {\n            console.error(\"Error:\", error);\n            alert(\"Error submitting game. Please try again.\");\n          }\n        });\n    </script>\n  </body>\n</html>\n"
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        0
+      ],
+      "id": "2d7f9742-bc17-4ef9-89a2-afb24bdbbd41",
+      "name": "HTML2"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{$json.html}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        460,
+        0
+      ],
+      "id": "fdcf7f2b-f5a5-4ee3-90e3-e653b0cb23ec",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.html }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        440,
+        220
+      ],
+      "id": "8d8bff77-1344-4eb3-8735-ddc795140cb3",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "html": "<!DOCTYPE html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n    <title>Game Review Blogs</title>\n    <script src=\"https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4\"></script>\n    <style>\n      @keyframes slideIn {\n        from {\n          opacity: 0;\n          transform: translateY(10px);\n        }\n        to {\n          opacity: 1;\n          transform: translateY(0);\n        }\n      }\n\n      #blogFrameWrapper:not(.hidden) {\n        animation: slideIn 0.3s ease-out;\n      }\n\n      #blogFrame {\n        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),\n          0 2px 4px -1px rgba(0, 0, 0, 0.06);\n      }\n\n      /* Add transition for sidebar width */\n      #sidebar {\n        transition: width 0.3s ease;\n      }\n\n      /* Update minimized sidebar styles */\n      #sidebar.minimized #blogContainer,\n      #sidebar.minimized .bg-gradient-to-r,\n      #sidebar.minimized h1 {\n        display: none;\n      }\n\n      #sidebar.minimized {\n        width: 3rem;\n        padding: 0.5rem;\n      }\n\n      #sidebar.minimized #minimizeSidebarBtn {\n        margin: 0;\n        width: 100%;\n      }\n\n      /* Minimized sidebar styles */\n      #sidebar.minimized {\n        width: 3rem;\n      }\n\n      #sidebar.minimized .author-name {\n        display: none;\n      }\n\n      #sidebar.minimized .author-icon {\n        display: flex !important;\n        justify-content: center;\n        align-items: center;\n      }\n\n      /* Show only author icons in minimized mode */\n      #sidebar.minimized #blogContainer > div {\n        background: none;\n        box-shadow: none;\n        margin-bottom: 0;\n        padding: 0;\n      }\n      #sidebar.minimized #blogContainer > div > .flex {\n        justify-content: center;\n        padding: 0.5rem 0;\n      }\n      #sidebar.minimized #blogContainer > div > .p-3 {\n        display: none;\n      }\n      .grayer {\n        background-color: #afaaaa;\n      }\n    </style>\n  </head>\n  <body class=\"bg-gray-100 text-gray-800 p-4\">\n    <div class=\"max-w-6xl mx-auto flex gap-4\">\n      <!-- Sidebar -->\n      <div\n        id=\"sidebar\"\n        class=\"fixed left-0 top-0 h-screen w-72 min-w-[14rem] transition-all duration-300 bg-white shadow-lg overflow-y-auto\"\n      >\n        <div class=\"sticky top-0 bg-white z-10 p-3\">\n          <div class=\"flex items-center justify-between gap-2 mb-2\">\n            <div class=\"flex items-center gap-2\">\n              <span class=\"bg-indigo-100 p-1.5 rounded-lg\">\n                <svg\n                  class=\"w-5 h-5 text-indigo-600\"\n                  fill=\"none\"\n                  stroke=\"currentColor\"\n                  viewBox=\"0 0 24 24\"\n                >\n                  <path\n                    stroke-linecap=\"round\"\n                    stroke-linejoin=\"round\"\n                    stroke-width=\"2\"\n                    d=\"M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z\"\n                  />\n                </svg>\n              </span>\n              <h1 class=\"text-xl font-semibold text-gray-800\">\n                🎮Review Games\n              </h1>\n            </div>\n            <button\n              id=\"minimizeSidebarBtn\"\n              class=\"p-1.5 hover:bg-gray-100 rounded-lg\"\n            >\n              <svg\n                class=\"w-5 h-5 text-gray-600\"\n                fill=\"none\"\n                stroke=\"currentColor\"\n                viewBox=\"0 0 24 24\"\n              >\n                <path\n                  stroke-linecap=\"round\"\n                  stroke-linejoin=\"round\"\n                  stroke-width=\"2\"\n                  d=\"M11 19l-7-7 7-7m8 14l-7-7 7-7\"\n                />\n              </svg>\n            </button>\n          </div>\n          <div\n            class=\"h-0.5 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full\"\n          ></div>\n        </div>\n        <div id=\"blogContainer\" class=\"p-3 space-y-3\"></div>\n      </div>\n\n      <!-- Main Content -->\n      <div class=\"ml-72 flex-1 p-4\">\n        <button\n          id=\"showSidebarBtn\"\n          class=\"hidden fixed top-4 left-4 z-50 px-4 py-2 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-all duration-300 flex items-center gap-2\"\n        >\n          <svg\n            xmlns=\"http://www.w3.org/2000/svg\"\n            class=\"h-5 w-5\"\n            viewBox=\"0 0 20 20\"\n            fill=\"currentColor\"\n          >\n            <path\n              fill-rule=\"evenodd\"\n              d=\"M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z\"\n              clip-rule=\"evenodd\"\n            />\n          </svg>\n          Show Author List\n        </button>\n        <div id=\"blogFrameWrapper\" class=\"hidden\">\n          <div class=\"bg-white rounded-xl shadow-lg p-3 mb-3\">\n            <div class=\"flex justify-between items-center mb-3\">\n              <div class=\"flex items-center gap-3\">\n                <span class=\"bg-indigo-100 p-2 rounded-lg\">\n                  <svg\n                    class=\"w-6 h-6 text-indigo-600\"\n                    fill=\"none\"\n                    stroke=\"currentColor\"\n                    viewBox=\"0 0 24 24\"\n                  >\n                    <path\n                      stroke-linecap=\"round\"\n                      stroke-linejoin=\"round\"\n                      stroke-width=\"2\"\n                      d=\"M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z\"\n                    />\n                  </svg>\n                </span>\n                <h2 class=\"text-2xl font-semibold text-gray-800\">\n                  📝 Blog Content\n                </h2>\n              </div>\n              <button\n                onclick=\"closeBlogFrame()\"\n                class=\"flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition duration-200\"\n              >\n                <span>Close</span>\n                <svg\n                  class=\"w-4 h-4\"\n                  fill=\"none\"\n                  stroke=\"currentColor\"\n                  viewBox=\"0 0 24 24\"\n                >\n                  <path\n                    stroke-linecap=\"round\"\n                    stroke-linejoin=\"round\"\n                    stroke-width=\"2\"\n                    d=\"M6 18L18 6M6 6l12 12\"\n                  />\n                </svg>\n              </button>\n            </div>\n            <div\n              class=\"relative rounded-xl overflow-hidden border border-gray-100\"\n            >\n              <div\n                class=\"absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-500 to-purple-500\"\n              ></div>\n              <iframe\n                id=\"blogFrame\"\n                class=\"w-full h-[calc(100vh-8rem)] bg-white\"\n                sandbox=\"allow-same-origin allow-scripts\"\n              >\n              </iframe>\n            </div>\n          </div>\n        </div>\n      </div>\n    </div>\n\n    <script>\n      // Add Title Case helper function\n      function toTitleCase(str) {\n        return str\n          .toLowerCase()\n          .split(\" \")\n          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))\n          .join(\" \");\n      }\n\n      const sidebar = document.getElementById(\"sidebar\");\n      const showSidebarBtn = document.getElementById(\"showSidebarBtn\");\n      const blogFrameWrapper = document.getElementById(\"blogFrameWrapper\");\n      const blogFrame = document.getElementById(\"blogFrame\");\n      const minimizeSidebarBtn = document.getElementById(\"minimizeSidebarBtn\");\n\n      function collapseSidebar() {\n        sidebar.style.transform = \"translateX(-100%)\";\n        showSidebarBtn.classList.remove(\"hidden\");\n        document.querySelector(\".ml-80\").classList.remove(\"ml-80\");\n      }\n\n      const authorTooltip = document.createElement(\"div\");\n      authorTooltip.className =\n        \"fixed hidden bg-gray-800 text-white text-sm px-3 py-2 rounded-lg shadow-lg z-50\";\n      document.body.appendChild(authorTooltip);\n\n      function showTooltip(event, text) {\n        authorTooltip.textContent = text;\n        authorTooltip.style.left = `${event.pageX + 10}px`;\n        authorTooltip.style.top = `${event.pageY + 10}px`;\n        authorTooltip.classList.remove(\"hidden\");\n      }\n\n      function hideTooltip() {\n        authorTooltip.classList.add(\"hidden\");\n      }\n\n      // Add this to ensure proper initial state\n      document.addEventListener(\"DOMContentLoaded\", () => {\n        sidebar.style.transform = \"translateX(0)\";\n      });\n\n      async function loadAndRenderBlogs() {\n        let groupedByAuthor = [];\n        try {\n          groupedByAuthor = await fetch(\n            \"https://n8n.lumigame.com/webhook/saba-review2/authors\",\n          ).then((response) => response.json());\n        } catch (error) {\n          console.error(\"Error fetching data:\", error);\n          groupedByAuthor = [];\n        }\n\n        const container = document.getElementById(\"blogContainer\");\n        container.innerHTML = \"\";\n\n        for (const author of groupedByAuthor) {\n          const groupDiv = document.createElement(\"div\");\n          groupDiv.className =\n            \"bg-white rounded-xl shadow-lg overflow-hidden mb-4\";\n\n          const authorTitle = document.createElement(\"div\");\n          authorTitle.className =\n            \"flex items-center gap-2 bg-white p-3 cursor-help\";\n          authorTitle.onmouseenter = (e) =>\n            showTooltip(e, `Styles: ${author.style}`);\n          authorTitle.onmouseleave = hideTooltip;\n\n          const authorIcon = document.createElement(\"span\");\n          authorIcon.className = \"bg-indigo-100 p-1.5 rounded-lg author-icon\";\n          authorIcon.innerHTML = `\n        <svg class=\"w-4 h-4 text-indigo-600\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\">\n            <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z\" />\n        </svg>\n        `;\n          const authorName = document.createElement(\"span\");\n          authorName.className = \"font-semibold text-gray-800 author-name\";\n          authorName.textContent = author.name;\n          authorTitle.appendChild(authorIcon);\n          authorTitle.appendChild(authorName);\n          groupDiv.appendChild(authorTitle);\n\n          const gameListDiv = document.createElement(\"div\");\n          gameListDiv.className = \"p-3 space-y-2\";\n\n          author.files.forEach((gameFiles) => {\n            const game = toTitleCase(\n              gameFiles.replace(\".html\", \"\").replaceAll(\"_\", \" \"),\n            );\n            const gameDiv = document.createElement(\"div\");\n            gameDiv.className =\n              \"cursor-pointer px-3 py-2 bg-gray-50 hover:bg-indigo-50 rounded-lg transition-all duration-200 text-sm text-gray-700 hover:text-indigo-600 hover:shadow-sm\";\n            gameDiv.textContent = game;\n            gameDiv.onclick = async () => {\n              const response = await fetch(\n                \"https://n8n.lumigame.com/webhook/get-file2\",\n                {\n                  method: \"POST\",\n                  headers: { \"Content-Type\": \"application/json\" },\n                  body: JSON.stringify({\n                    file: `${author.folder}/${gameFiles}`,\n                  }),\n                },\n              );\n\n              if (response.ok) {\n                const data = await response.json();\n                const blob = new Blob([data.output], { type: \"text/html\" });\n                const url = URL.createObjectURL(blob);\n                blogFrame.src = url;\n                blogFrameWrapper.classList.remove(\"hidden\");\n                blogFrameWrapper.scrollIntoView({ behavior: \"smooth\" });\n              } else {\n                alert(\"Failed to load blog content.\");\n              }\n            };\n            gameListDiv.appendChild(gameDiv);\n          });\n\n          groupDiv.appendChild(gameListDiv);\n          container.appendChild(groupDiv);\n        }\n      }\n\n      function closeBlogFrame() {\n        blogFrameWrapper.classList.add(\"hidden\");\n        showSidebar();\n      }\n\n      function toggleSidebar() {\n        const isMinimized = sidebar.classList.contains(\"minimized\");\n        if (isMinimized) {\n          sidebar.classList.remove(\"minimized\");\n          sidebar.style.width = \"18rem\";\n          minimizeSidebarBtn.innerHTML = `\n          <svg class=\"w-5 h-5 text-gray-600\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\">\n            <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M11 19l-7-7 7-7m8 14l-7-7 7-7\" />\n          </svg>\n        `;\n          document.querySelector(\".ml-72\").style.marginLeft = \"18rem\";\n        } else {\n          sidebar.classList.add(\"minimized\");\n          sidebar.style.width = \"3rem\";\n          minimizeSidebarBtn.innerHTML = `\n          <svg class=\"w-5 h-5 text-gray-600\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\">\n            <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M13 5l7 7-7 7M5 5l7 7-7 7\" />\n          </svg>\n        `;\n          document.querySelector(\".ml-72\").style.marginLeft = \"3rem\";\n        }\n      }\n\n      minimizeSidebarBtn.addEventListener(\"click\", toggleSidebar);\n\n      loadAndRenderBlogs();\n\n      // Function to handle existing author selection\n      function handleExistingAuthorChange() {\n        const select = document.getElementById(\"existingAuthor\");\n        const styleTextarea = document.getElementById(\"style\");\n        const selectedOption = select.options[select.selectedIndex];\n\n        if (selectedOption && selectedOption.dataset.style) {\n          styleTextarea.value = selectedOption.dataset.style;\n          styleTextarea.disabled = true;\n          styleTextarea.classList.add(\"bg-gray-100\", \"cursor-not-allowed\");\n          styleTextarea.classList.remove(\n            \"focus:ring-2\",\n            \"focus:ring-blue-500\",\n            \"focus:border-blue-500\",\n          );\n        } else {\n          styleTextarea.value = \"\";\n          styleTextarea.disabled = false;\n          styleTextarea.classList.remove(\"bg-gray-100\", \"cursor-not-allowed\");\n          styleTextarea.classList.add(\n            \"focus:ring-2\",\n            \"focus:ring-blue-500\",\n            \"focus:border-blue-500\",\n          );\n        }\n      }\n\n      // Function to handle author type change\n      function handleAuthorTypeChange() {\n        const authorType = document.getElementById(\"authorType\").value;\n        const newAuthorSection = document.getElementById(\"newAuthorSection\");\n        const existingAuthorSection = document.getElementById(\n          \"existingAuthorSection\",\n        );\n        const authorInput = document.getElementById(\"author\");\n        const existingAuthorSelect = document.getElementById(\"existingAuthor\");\n        const styleTextarea = document.getElementById(\"style\");\n\n        if (authorType === \"new\") {\n          newAuthorSection.style.display = \"block\";\n          existingAuthorSection.style.display = \"none\";\n          authorInput.required = true;\n          existingAuthorSelect.required = false;\n          styleTextarea.disabled = false;\n          styleTextarea.value = \"\";\n          styleTextarea.classList.remove(\n            \"bg-gray-100\",\n            \"cursor-not-allowed\",\n            \"grayer\",\n          );\n          styleTextarea.classList.add(\n            \"focus:ring-2\",\n            \"focus:ring-blue-500\",\n            \"focus:border-blue-500\",\n          );\n        } else {\n          newAuthorSection.style.display = \"none\";\n          existingAuthorSection.style.display = \"block\";\n          authorInput.required = false;\n          existingAuthorSelect.required = true;\n          fetchAuthors();\n          // If an existing author is selected, disable the style textarea\n          if (existingAuthorSelect.value) {\n            styleTextarea.disabled = true;\n            styleTextarea.classList.add(\n              \"bg-gray-100\",\n              \"cursor-not-allowed\",\n              \"grayer\",\n            );\n            styleTextarea.classList.remove(\n              \"focus:ring-2\",\n              \"focus:ring-blue-500\",\n              \"focus:border-blue-500\",\n            );\n          }\n        }\n      }\n    </script>\n  </body>\n</html>\n"
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        220,
+        220
+      ],
+      "id": "2bf09c95-7054-4297-aa0a-9b3d3e0f9de8",
+      "name": "HTML"
+    },
+    {
+      "parameters": {
+        "path": "saba-review2",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        220
+      ],
+      "id": "65c77d97-d967-41c9-9b2a-235af524f4d1",
+      "name": "List Games",
+      "webhookId": "92aaedc5-dbb5-47dc-ba5f-0d4d723b4a64"
+    },
+    {
+      "parameters": {
+        "path": "saba-review2/admin",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "f63e0f4b-b3c3-42a6-8358-58517177b7ed",
+      "name": "Admin",
+      "webhookId": "92aaedc5-dbb5-47dc-ba5f-0d4d723b4a64"
+    }
+  ],
+  "pinData": {
+    "Admin": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n.lumigame.com",
+            "sec-ch-ua": "\"Chromium\";v=\"134\", \"Not:A-Brand\";v=\"24\", \"Opera\";v=\"119\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "upgrade-insecure-requests": "1",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 OPR/119.0.0.0",
+            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            "sec-fetch-site": "none",
+            "sec-fetch-mode": "navigate",
+            "sec-fetch-user": "?1",
+            "sec-fetch-dest": "document",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "en-US,en;q=0.9",
+            "priority": "u=0, i",
+            "cookie": "rl_page_init_referrer=RudderEncrypt%3AU2FsdGVkX19VcVmwLlc6A%2FYwrYwE8FPhFHJCi7f1Vzs%3D; rl_page_init_referring_domain=RudderEncrypt%3AU2FsdGVkX1%2BhfVe6bFCHqn%2BnlnesXMmqZ%2FG7ruACRGQ%3D; n8n-auth=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjI1MjAyZjhjLTkxZTctNDRmMS1hNTMwLTg5ODllY2ZmN2UzNiIsImhhc2giOiJYZWZMVXlYNG1KIiwiYnJvd3NlcklkIjoiMksyMGNiVzRUa28wUlZtdTIyU0cySHZzd2xmaDZDN2ZnTjN1QUd6Sk5EUT0iLCJpYXQiOjE3NDkyNzM4MjMsImV4cCI6MTc0OTg3ODYyM30.LAaSpx0cfc9k2GzLoar50yturYlI2bosWdUinoTJ-gs; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX19EhCF8oIFsMfdy%2F0Vc%2FlcPMCnyxTr%2FLmt9Kna0nLqR6dgGT7k5wipwzhDrZGUobnJW37kkJ1XT%2FA%3D%3D; rl_user_id=RudderEncrypt%3AU2FsdGVkX1%2B6p3w7rMpTWAmRvo4glgMHpK8oyjU0E4GBsZPA%2FYDvpfghs3vSj2JAmpOVK%2BW45PjGI4YxLTPDFWvYnHNnUE2RsYVdNVEZP83Q0gL7odHhEJifKOLZGXWaHdFzdjC0pOTmm8kwAb37iPvPG9jnLKO0OORSMQUxYgM%3D; rl_trait=RudderEncrypt%3AU2FsdGVkX19C0GQDuPPo8%2BwE1pmpZd7I034DYWaFfpprvtOkmm9ty%2FNSlVsCW%2FJHLimhEyONb31j6MV%2FiJ6U16Kn3zM5%2F2imHW5TOtyKfgAsChAC355Ii9VCYGPy81FTzd%2BYaC8seiXXtCX9TaE3Zw%3D%3D; ph_phc_4URIAm1uYfJO7j8kWSe0J8lc8IqnstRLS7Jx8NcakHo_posthog=%7B%22distinct_id%22%3A%2298bfed1c0f22fa9e07d0e38dc58da94b0281d63095bd4ba14894d42a90a063e3%2325202f8c-91e7-44f1-a530-8989ecff7e36%22%2C%22%24sesid%22%3A%5B1749388671667%2C%2201974fa7-2966-7bfb-969a-8044c8c77389%22%2C1749388044645%5D%2C%22%24epp%22%3Atrue%2C%22%24initial_person_info%22%3A%7B%22r%22%3A%22%24direct%22%2C%22u%22%3A%22https%3A%2F%2Fn8n.lumigame.com%2Fsignout%22%7D%7D; rl_session=RudderEncrypt%3AU2FsdGVkX1%2B8AHGXvErSOAlI7gYhuIVjtzerz23dbMgGIPQpg%2FrNBz6QwV2cu5gepCTyK0ejS9wYY5qNs1bk6KZjUcmQd1qkJEW%2FO6qfcjEffZTKpMbzlAu8K%2FFtUxW4D4FL1SsgDFHieoggPEMweQ%3D%3D",
+            "x-forwarded-proto": "https",
+            "x-forwarded-for": "10.10.100.250"
+          },
+          "params": {},
+          "query": {},
+          "body": {},
+          "webhookUrl": "https://n8n.lumigame.com/webhook/saba-review",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "HTML2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Games": {
+      "main": [
+        [
+          {
+            "node": "HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Admin": {
+      "main": [
+        [
+          {
+            "node": "HTML2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7bd23be1-861e-498a-99cf-55d340d50bbe",
+  "meta": {
+    "instanceId": "98bfed1c0f22fa9e07d0e38dc58da94b0281d63095bd4ba14894d42a90a063e3"
+  },
+  "id": "PY98GAHJHqamFA23",
+  "tags": []
+}

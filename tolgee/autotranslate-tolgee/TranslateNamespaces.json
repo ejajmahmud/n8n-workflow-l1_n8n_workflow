@@ -1,0 +1,656 @@
+{
+  "name": "TranslateNamespaces",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "=https://tolgee.sabagame.com/v2/projects/{{ $json.project }}/languages?size=500",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "filterNamespace",
+              "value": "={{ [$json.namespace]}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -120,
+        20
+      ],
+      "id": "bc196e0a-debe-4796-8614-9942cf0b3a0a",
+      "name": "GetLanguages",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "VWtLpVxouEBsq6hZ",
+          "name": "tolgee"
+        },
+        "httpHeaderAuth": {
+          "id": "38GHDtQkTfqjRDxD",
+          "name": "Tolgee n8n agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3dde3bac-1f2c-4a8d-8290-aa4056940545",
+              "leftValue": "={{ $json.page.totalPages }}",
+              "rightValue": 1,
+              "operator": {
+                "type": "number",
+                "operation": "lte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        160
+      ],
+      "id": "a09e959b-1da5-41bc-950b-441dda3784e1",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "url": "=https://tolgee.sabagame.com/v2/projects/{{ $('Trigger').item.json.project }}/translations?{{ $json.queryLang }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "filterUntranslatedAny",
+              "value": "true"
+            },
+            {
+              "name": "filterNamespace",
+              "value": "={{ [$('Trigger').item.json.namespace] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        260,
+        180
+      ],
+      "id": "946f9996-a768-47a7-ba8a-9f3ddc3c8403",
+      "name": "GetKeys",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "VWtLpVxouEBsq6hZ",
+          "name": "tolgee"
+        },
+        "httpHeaderAuth": {
+          "id": "38GHDtQkTfqjRDxD",
+          "name": "Tolgee n8n agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://tolgee.sabagame.com/v2/projects/{{$('Trigger').item.json.project}}/translations",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "size",
+              "value": "={{ $json.page.totalElements}}"
+            },
+            {
+              "name": "filterUntranslatedAny",
+              "value": "true"
+            },
+            {
+              "name": "filterNamespace",
+              "value": "={{ [$('Trigger').item.json.name] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        260
+      ],
+      "id": "5eb5b024-6d38-431d-9ab1-95a3e16bcc5b",
+      "name": "GetKeys1",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "VWtLpVxouEBsq6hZ",
+          "name": "tolgee"
+        },
+        "httpHeaderAuth": {
+          "id": "38GHDtQkTfqjRDxD",
+          "name": "Tolgee n8n agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "_embedded.keys",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        860,
+        160
+      ],
+      "id": "8add8432-4f83-4558-acab-81c4c3ec2cb1",
+      "name": "Split Out1"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const queryLang = $json._embedded.languages.map((x)=>`languages=${x.tag}`).join(\"&\")\n\nreturn {\n  queryLang\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        80,
+        200
+      ],
+      "id": "3e233106-9f38-4a04-ad7d-cdff9685d9d0",
+      "name": "GenerateQuery"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const lang = $json._embedded.languages.map((item)=>({\n  tag: item.tag,\n  name: item.name\n}))\nreturn {\n  lang\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        600,
+        -20
+      ],
+      "id": "d7fc9f5e-4fd9-4ee2-9520-e08e6eaf313f",
+      "name": "GenerateLanguagesFilter"
+    },
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"project\": 2,\n  \"namespace\": \"\",\n  \"languageBase\": \"en\"\n}"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -320,
+        340
+      ],
+      "id": "bf91e3d9-5b15-4e28-96d3-bd08e39c0f7a",
+      "name": "Trigger"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        1060,
+        80
+      ],
+      "id": "6217f9b9-1852-41cb-bbb5-d48acbf98608",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ce0f0a37-0b3a-4f8d-9f78-298852d00f85",
+              "leftValue": "={{ $json.missing }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "array",
+                "operation": "lengthEquals",
+                "rightType": "number"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1500,
+        85
+      ],
+      "id": "2ab398d7-b779-4345-9cf8-857e8caa2967",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "605b4594-d037-43e0-8d9e-70b96e54d118",
+              "leftValue": "={{ $json.source }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        1920,
+        80
+      ],
+      "id": "5a496ab6-c5b0-43f5-8b4e-3dec40ff5868",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const languageBase = $('Trigger').item.json.languageBase\nif (!$json.translations[languageBase]?.text) {\n  return {\n    value: $json.keyName,\n    missing: []\n  }\n}\nconst item = {\n  value: $json.translations[languageBase]?.text ?? $json.keyName,\n  keyName: $json.keyName,\n  keyNamespace: $json.keyNamespace,\n  project: $json.project,\n  missing: []\n}\nfor (const lang of $json.lang) {\n  if (!$json.translations[lang.tag] || $json.translations[lang.tag].state === \"UNTRANSLATED\") {\n    item.missing.push(lang)\n  } \n}\n\nreturn item;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1280,
+        85
+      ],
+      "id": "c156b7b2-ffa2-48b8-ae64-0c1615b82f21",
+      "name": "FilterUntranslateKey"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = []\nfor (const item of $input.all()) {\n  for (const missing of item.json.missing) {\n    items.push({\n      \"keyName\": item.json.keyName,\n      \"keyNamespace\": item.json.keyNamespace,\n      \"source\": item.json.value,\n      \"translateTo\": missing.name,\n      \"languageTag\": missing.tag,\n      \"translateResult\": \"\",\n      \"project\": item.json.project\n    })\n  }\n}\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1720,
+        80
+      ],
+      "id": "8295e5a1-82f5-4eaa-b8ca-b21a63a44926",
+      "name": "StandardlizeItem"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return {\n  context: \"A game\"\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        460
+      ],
+      "id": "c7add3bd-5486-435a-9614-264ea199698e",
+      "name": "ProvideContext"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        2080,
+        340
+      ],
+      "id": "fd7c868c-752c-4d45-b543-0805f876b04c",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "mtwIBKDqHXr6Wpi1",
+          "mode": "list",
+          "cachedResultName": "TranslateToTolgee"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "keyName": "={{ $json.keyName }}",
+            "keyNamespace": "={{ $json.keyNamespace }}",
+            "source": "={{ $json.source }}",
+            "translateTo": "={{ $json.translateTo }}",
+            "languageTag": "={{ $json.languageTag }}",
+            "project": "={{ $('Trigger').item.json.project }}",
+            "context": "={{ $json.context }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "keyName",
+              "displayName": "keyName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "keyNamespace",
+              "displayName": "keyNamespace",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "translateTo",
+              "displayName": "translateTo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "languageTag",
+              "displayName": "languageTag",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "project",
+              "displayName": "project",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number"
+            },
+            {
+              "id": "context",
+              "displayName": "context",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "each",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        2300,
+        340
+      ],
+      "id": "a2c59d0c-380a-40fd-aa2b-4d4c82754723",
+      "name": "Execute Workflow"
+    }
+  ],
+  "pinData": {
+    "Trigger": [
+      {
+        "json": {
+          "project": 7,
+          "namespace": "CoinMining",
+          "languageBase": "en"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "GetLanguages": {
+      "main": [
+        [
+          {
+            "node": "GenerateQuery",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GenerateLanguagesFilter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Split Out1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GetKeys1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetKeys": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetKeys1": {
+      "main": [
+        [
+          {
+            "node": "Split Out1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "GenerateQuery": {
+      "main": [
+        [
+          {
+            "node": "GetKeys",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GenerateLanguagesFilter": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "GetLanguages",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "ProvideContext",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [],
+        [
+          {
+            "node": "StandardlizeItem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FilterUntranslateKey": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "StandardlizeItem": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "FilterUntranslateKey",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ProvideContext": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "14c66b32-b09f-456b-91f6-d388cb194a26",
+  "meta": {
+    "instanceId": "98bfed1c0f22fa9e07d0e38dc58da94b0281d63095bd4ba14894d42a90a063e3"
+  },
+  "id": "z6P0A8vYFJwvLkA0",
+  "tags": []
+}

@@ -1,0 +1,260 @@
+{
+  "name": "Bet Latency",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2180,
+        -1280
+      ],
+      "id": "07767455-6ebc-48ac-900f-6ef6342ee30c",
+      "name": "When clicking ‘Test workflow’"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Function Node logic to calculate latency and highlight:\nconst logs=  $input.all().map(log => ({\n  PlayerId: log.json.call.playerId,\n  GameTypeId: log.json.call.gameTypeId,\n  GameRoundId: log.json.call.gameRoundId,\n  RequestTimestamp: log.json.requestTimeStamp.slice(0, -5), // Trim timezone\n  ResponseTimestamp: log.json.responseTimeStamp.slice(0, -5),\n  Latency: (new Date(log.json.responseTimeStamp) - new Date(log.json.requestTimeStamp))\n}));\nreturn { logs: logs }; // Limit to 10 rows"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1560,
+        -1280
+      ],
+      "id": "4482deba-1e19-4001-b8b3-50e7adee90c6",
+      "name": "Calc Latency"
+    },
+    {
+      "parameters": {
+        "url": "https://l2uatproxy.sgamesuat.com/sit/admin-logs-api/logs/bets/time-range",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "playerId",
+              "value": "33_0_C_thitnhacai"
+            },
+            {
+              "name": "limit",
+              "value": "20"
+            },
+            {
+              "name": "startTime",
+              "value": "2025-04-22"
+            },
+            {
+              "name": "endTime",
+              "value": "2025-04-23"
+            },
+            {
+              "name": "gameTypeId",
+              "value": "22"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1860,
+        -1060
+      ],
+      "id": "200141e6-a6fa-448c-93a4-7a37f536d346",
+      "name": "Find in Time Range"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Function Node logic to calculate latency and highlight:\nconst logs=  $input.all().map(log => ({\n  PlayerId: log.json.call.playerId,\n  GameTypeId: log.json.call.gameTypeId,\n  GameRoundId: log.json.call.gameRoundId,\n  RequestTimestamp: log.json.requestTimeStamp.slice(0, -5), // Trim timezone\n  ResponseTimestamp: log.json.responseTimeStamp.slice(0, -5),\n  Latency: (new Date(log.json.responseTimeStamp) - new Date(log.json.requestTimeStamp))\n}));\nreturn { logs: logs }; // Limit to 10 rows"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1560,
+        -1060
+      ],
+      "id": "28dbc18c-2434-4149-b683-dcb6cda4c25a",
+      "name": "Calc Latency1"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "logs",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -1260,
+        -1280
+      ],
+      "id": "f6d29b63-7f7e-4f88-92f3-b08ef56f038a",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        -1040,
+        -1280
+      ],
+      "id": "dbb96aed-ea63-4b6c-a3cf-ced3ef83d810",
+      "name": "Convert to XLSX"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "logs",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -1260,
+        -1060
+      ],
+      "id": "6268cd5e-57a3-42b6-95f6-a50f5e51b191",
+      "name": "Split Out1"
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        -1040,
+        -1060
+      ],
+      "id": "dcd6fead-6a53-4002-a5a7-15d96aaf1184",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "url": "https://proxy.v-gaming.net/admin-logs-api/logs/bets/top",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "playerId",
+              "value": "26_0_C_0_4238100"
+            },
+            {
+              "name": "limit",
+              "value": "100"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1860,
+        -1280
+      ],
+      "id": "2611124b-58e0-4221-9ac2-877a4f2aaca5",
+      "name": "Find Latest Bet Logs"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Find Latest Bet Logs",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Find in Time Range",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find in Time Range": {
+      "main": [
+        [
+          {
+            "node": "Calc Latency1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calc Latency1": {
+      "main": [
+        [
+          {
+            "node": "Split Out1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calc Latency": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Convert to XLSX",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out1": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Latest Bet Logs": {
+      "main": [
+        [
+          {
+            "node": "Calc Latency",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1e8c4d74-535b-451c-842d-41ae80253032",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "98bfed1c0f22fa9e07d0e38dc58da94b0281d63095bd4ba14894d42a90a063e3"
+  },
+  "id": "Vo0j2k0VZBgHifYP",
+  "tags": []
+}

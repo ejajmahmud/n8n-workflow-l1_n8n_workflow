@@ -1,0 +1,398 @@
+{
+  "name": "Rocketor Deploy Multi Sites",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -900,
+        -280
+      ],
+      "id": "47e8b50b-f37a-4e43-a090-105779585261",
+      "name": "When clicking ‘Test workflow’"
+    },
+    {
+      "parameters": {
+        "url": "https://deploy.lumigame.com/api/Site/GetSitesByGitRepo",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "GitRepoUrl",
+              "value": "={{ $json.web_url }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -80,
+        -260
+      ],
+      "id": "52d0eb47-7f4f-41f7-940b-c0044592f47b",
+      "name": "Search SiteId By Git Repo",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "PFerICRo480lY7rT",
+          "name": "Rocketor Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "Sites",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        440,
+        -280
+      ],
+      "id": "3a03a676-8419-4c61-b5b0-031c5058c7b1",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://deploy.lumigame.com/api/Site/DeployLocation",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "=json",
+        "specifyBody": "json",
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "jsonBody": "={\n  \"siteId\":  {{ $json.SiteId }},\n  \"branch\": \"{{ $json.Branch }}\",\n  \"location\":\"{{ $json.LocationName }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        800,
+        160
+      ],
+      "id": "474e9c17-5308-40ad-8530-74f96a01e146",
+      "name": "Deploy",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "PFerICRo480lY7rT",
+          "name": "Rocketor Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        880,
+        -140
+      ],
+      "id": "1b3e5c34-0e1c-4703-ab7b-a1445c6696ec",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "51fc17ca-226b-4a65-93a3-479a5f2af564",
+              "name": "SiteId",
+              "value": "={{ $json.Id }}",
+              "type": "number"
+            },
+            {
+              "id": "2818b764-a1c4-4fff-a61a-e095fb2e2a37",
+              "name": "LocationName",
+              "value": "={{ $json.Stack }}-{{ $json.Service }}-{{ $json.Env }}",
+              "type": "string"
+            },
+            {
+              "id": "06420a4d-241d-4515-95a8-5d8cf724ac64",
+              "name": "Branch",
+              "value": "={{ $json.BranchName }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1100,
+        -120
+      ],
+      "id": "b3e6a739-3631-41c1-9731-782769404771",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  stack: \"l1\",\n  branchName: \"kl-deployment\",\n  env: \"local\"\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -720,
+        -280
+      ],
+      "id": "c1414537-dd23-47d6-8b06-2181106db735",
+      "name": "StartupConfigs"
+    },
+    {
+      "parameters": {
+        "url": "https://git3.nexdev.net/api/v4/groups/l1%2fgame-services/projects?page=1&per_page=100&membership=true&archived=false",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "gitlabApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -520,
+        -280
+      ],
+      "id": "8371a3b2-3339-4d10-ad85-63d2e5356c92",
+      "name": "Get all game service repositories",
+      "credentials": {
+        "gitlabApi": {
+          "id": "CaFzD7fP15mjxSRs",
+          "name": "Gitlab Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -300,
+        -280
+      ],
+      "id": "2e4cf5c4-cc78-43fb-9565-daad1a2eedf8",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ce9b92e6-7ae8-4d6d-97d8-ad93e769f89c",
+              "leftValue": "={{ $json.StatusCode }}",
+              "rightValue": 200,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        180,
+        -260
+      ],
+      "id": "c3426eea-4b23-44a1-82a2-669f97a9f165",
+      "name": "Has Active Site"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nlet services = []\nfor (const item of $input.all()) {\n  if(item.json.Stack === $('StartupConfigs').first().json.stack)\n  {\n    item.json.Service = item.json.Service.replaceAll( /_/gi,  `-`,);\n    item.json.Env = $('StartupConfigs').first().json.env;\n    item.json.BranchName = $('StartupConfigs').first().json.branchName;\n    services.push(item.json);\n  }\n}\n\nreturn services ;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        -280
+      ],
+      "id": "130ff320-2911-4e80-a11e-835e08cb0dfc",
+      "name": "FilterAndFormat"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1020,
+        160
+      ],
+      "id": "1d62b55d-9467-47f2-8d87-e8cafb942e1e",
+      "name": "Wait 2 seconds",
+      "webhookId": "36ed3ea0-6e01-4ba6-a7be-9b1ab2e0128c"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "StartupConfigs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search SiteId By Git Repo": {
+      "main": [
+        [
+          {
+            "node": "Has Active Site",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "FilterAndFormat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deploy": {
+      "main": [
+        [
+          {
+            "node": "Wait 2 seconds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "StartupConfigs": {
+      "main": [
+        [
+          {
+            "node": "Get all game service repositories",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get all game service repositories": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Search SiteId By Git Repo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Active Site": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FilterAndFormat": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d72ef489-1f32-4271-8ce6-7033ae1d92ef",
+  "meta": {
+    "instanceId": "98bfed1c0f22fa9e07d0e38dc58da94b0281d63095bd4ba14894d42a90a063e3"
+  },
+  "id": "pPubaObxK3GWFD5y",
+  "tags": []
+}

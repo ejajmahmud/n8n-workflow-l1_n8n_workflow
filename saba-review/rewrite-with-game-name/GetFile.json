@@ -1,0 +1,144 @@
+{
+  "name": "GetFile",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "get-file2",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        240,
+        -220
+      ],
+      "id": "af824e47-8b65-41b3-b946-0b9e797cc2a7",
+      "name": "Webhook",
+      "webhookId": "4494c56e-180f-42d2-b72c-219853a64e9d"
+    },
+    {
+      "parameters": {
+        "fileSelector": "={{$json.body.file}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        440,
+        -220
+      ],
+      "id": "fd6eebc9-cd83-430b-bec3-4e3fcbd99543",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        -220
+      ],
+      "id": "d55bfbd5-6fe7-435d-ba02-b9fad255e1bf",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "destinationKey": "output",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        660,
+        -220
+      ],
+      "id": "f958d256-9fec-49bf-9449-19e9cb73b535",
+      "name": "Extract from File"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n.lumigame.com",
+            "content-length": "47",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36 Edg/137.0.0.0",
+            "sec-ch-ua": "\"Microsoft Edge\";v=\"137\", \"Chromium\";v=\"137\", \"Not/A)Brand\";v=\"24\"",
+            "content-type": "application/json",
+            "sec-ch-ua-mobile": "?0",
+            "accept": "*/*",
+            "origin": "http://127.0.0.1:5501",
+            "sec-fetch-site": "cross-site",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-dest": "empty",
+            "referer": "http://127.0.0.1:5501/",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "en-US,en;q=0.9",
+            "priority": "u=1, i",
+            "x-forwarded-proto": "https",
+            "x-forwarded-for": "10.10.100.250"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "file": "/tmp/review-games/Zeus vs Hades.html"
+          },
+          "webhookUrl": "https://n8n.lumigame.com/webhook/get-file",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1b7520e5-1e78-499f-b67d-94de439df0bf",
+  "meta": {
+    "instanceId": "98bfed1c0f22fa9e07d0e38dc58da94b0281d63095bd4ba14894d42a90a063e3"
+  },
+  "id": "nG1p8Tg36q7ub15X",
+  "tags": []
+}

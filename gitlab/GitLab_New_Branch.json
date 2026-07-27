@@ -1,0 +1,192 @@
+{
+  "name": "GitLab New Branch",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -360
+      ],
+      "id": "64c5baf0-fdd1-41e9-ba98-5a48d8a66a9b",
+      "name": "Trigger"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        800,
+        -360
+      ],
+      "id": "2c6d7306-8bcc-450d-9262-8d4bd0ddd50d",
+      "name": "Loop Over Items",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://git3.nexdev.net/api/v4/projects/{{$('Loop Over Items').item.json.id}}/repository/branches",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "gitlabApi",
+        "sendQuery": true,
+        "specifyQuery": "json",
+        "jsonQuery": "={\n  \"branch\": \"{{$('StartupConfigs').last().json.newBranchName}}\",\n  \"ref\":\"{{$('Loop Over Items').item.json.default_branch}}\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1120,
+        -340
+      ],
+      "id": "28492be4-7a97-4e08-a24b-8486cb3f66b9",
+      "name": "Create branch",
+      "credentials": {
+        "gitlabApi": {
+          "id": "CaFzD7fP15mjxSRs",
+          "name": "Gitlab Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  newBranchName: \"kl-deployment\",\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        -360
+      ],
+      "id": "6f26fdfb-52b4-4633-99a4-33776cf8f4de",
+      "name": "StartupConfigs"
+    },
+    {
+      "parameters": {
+        "url": "https://git3.nexdev.net/api/v4/groups/l1%2fgame-services/projects?page=1&per_page=100&membership=true&archived=false",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "gitlabApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        460,
+        -360
+      ],
+      "id": "a21370f2-5b9f-44a8-91e6-43eeb189ce3b",
+      "name": "Get all game service repositories",
+      "credentials": {
+        "gitlabApi": {
+          "id": "CaFzD7fP15mjxSRs",
+          "name": "Gitlab Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1440,
+        -320
+      ],
+      "id": "8215e386-5ad6-496a-8f1b-9140263a2920",
+      "name": "Wait",
+      "webhookId": "47faa2cf-df11-469e-9976-42ffdd47f1a8"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "StartupConfigs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Create branch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create branch": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "StartupConfigs": {
+      "main": [
+        [
+          {
+            "node": "Get all game service repositories",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get all game service repositories": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "53d27821-b1b6-44bc-8b7d-c64f3ec0366c",
+  "meta": {
+    "instanceId": "98bfed1c0f22fa9e07d0e38dc58da94b0281d63095bd4ba14894d42a90a063e3"
+  },
+  "id": "PPRCK5ytX4XkVeuU",
+  "tags": []
+}

@@ -1,0 +1,705 @@
+{
+  "name": "RewriteSlotJudge",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 2
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -580,
+        -120
+      ],
+      "id": "326dcd4e-849a-4bc5-b714-a91df037262c",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://slotsjudge.com/sitemap.xml",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        80,
+        -140
+      ],
+      "id": "e225d9dc-f42a-42a1-b7db-9e09fae62902",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://10.5.10.110:11777/v1/scrape",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "url",
+              "value": "={{ $('DefineVar').item.json.url }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1740,
+        -180
+      ],
+      "id": "11fd764d-351e-4a14-b769-3665af64e8b0",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.xml",
+      "typeVersion": 1,
+      "position": [
+        260,
+        -140
+      ],
+      "id": "4e5bd7e6-3c33-429b-914b-0bef0d47721f",
+      "name": "XML"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "urlset.url",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        440,
+        -140
+      ],
+      "id": "53030362-44c1-49c0-850f-f3f8456d422f",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "95d10889-8170-4bd4-beae-8fd207b3b855",
+              "leftValue": "={{ $json.loc }}",
+              "rightValue": "/online-slots",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "21866cec-15ee-4630-8aec-11aa03c63493",
+              "leftValue": "={{ $json.loc }}",
+              "rightValue": "online-slots/",
+              "operator": {
+                "type": "string",
+                "operation": "notEndsWith"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        640,
+        -140
+      ],
+      "id": "8ebc83dd-c6a2-44db-b6a0-5b0f20f35533",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "jsCode": "function pickRandom(arr) {\n  return arr[Math.floor(Math.random() * arr.length)];\n}\n\nreturn pickRandom($input.all());"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        -140
+      ],
+      "id": "2819c8ac-bceb-479d-b63f-79b4ba2775b7",
+      "name": "PickRandom"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d841fa64-688b-407c-9eb2-52219d90458b",
+              "leftValue": "={{ $json.stdout }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1440,
+        -140
+      ],
+      "id": "fa1bf0ce-04a8-4112-a54d-269e21035bc4",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "data.markdown",
+        "options": {
+          "fileName": "={{ `raw_${$('DefineVar').item.json.name}.md` }}"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        2120,
+        60
+      ],
+      "id": "96fbd6bb-9c76-4b87-b355-e2dd2be92f57",
+      "name": "Convert to File4"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const urlArr = $('PickRandom').item.json.loc.split(\"/\")\nconst name = urlArr.length < 2? \"none\": urlArr[urlArr.length-2]\nconst date = $('PickRandom').item.json.lastmod\n\nreturn {\n  name: `${name}=${date.replaceAll(\":\",\"-\")}`,\n  url: $('PickRandom').item.json.loc,\n  lastmod: date\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1060,
+        -140
+      ],
+      "id": "87cf4a12-db55-4e09-bd1b-d4b44a140b1d",
+      "name": "DefineVar"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=/tmp/n8n_rewrite/raw/raw_{{ $('DefineVar').item.json.name }}.md",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        2320,
+        120
+      ],
+      "id": "ec66a4ba-c9ff-4406-a370-e50c2e4e7585",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "output",
+        "options": {
+          "fileName": "translate.md"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        3220,
+        -360
+      ],
+      "id": "419b3e61-55f6-4a16-a995-49cf9206670e",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.data.markdown }}",
+        "options": {
+          "systemMessage": "You are given text content extracted from a website. The content may include irrelevant elements such as navigation links, registration buttons, publication dates, author names, or comment sections. Your task is to extract only the main body of the article — the core textual content that conveys the primary message or story. \n\nPlease remove:\n- Any hyperlinks or buttons (e.g., \"Register\", \"Subscribe\", \"Read more\")\n- Metadata such as publication date, author name, or tags\n- Comments, footers, or sidebars\n- Any unrelated or repeated boilerplate content\n\nReturn only the clean, readable article content in plain text format. Extract specific information from the website."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        2160,
+        -360
+      ],
+      "id": "27b2d2b6-fccf-41a2-97e6-a089aaf85a0a",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output }}",
+        "options": {
+          "systemMessage": "I want you to act as a text formatting assistant specialized in converting plain text content into structured Markdown format. Based on the input topic, I will generate a prompt that guides the model to identify text elements (headings, lists, quotes, code blocks, etc.), apply appropriate Markdown syntax, and preserve semantic meaning while enhancing readability. The prompt will include examples, formatting rules, and instructions for handling edge cases (e.g., nested lists, emphasis, or special characters). This will enable users to efficiently transform unstructured text into professional-grade documentation, emails, or web content. (Return only result)"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        2560,
+        -360
+      ],
+      "id": "159f40b4-7364-465b-8464-86494bf10e1a",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        2540,
+        -180
+      ],
+      "id": "5b5b9421-e051-4296-941a-1bbbacccade4",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ZSOZ91594U8CyuHi",
+          "name": "Gemini Acc"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-pro-preview-05-06",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        2120,
+        -140
+      ],
+      "id": "5bc79a1a-3e7c-47b0-ba98-2a5945581398",
+      "name": "Google Gemini Chat Model4",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ZSOZ91594U8CyuHi",
+          "name": "Gemini Acc"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output }}",
+        "options": {
+          "systemMessage": "I want you to act as a professional markdown document translator who specializes in converting English to Vietnamese while preserving structure, formatting, and meaning. Your task is to:\n\nAccurately translate all text (headings, body, lists, code, tables) with proper grammar, idioms, and cultural context.\nPreserve markdown syntax (headers, lists, code blocks, tables) to maintain functionality.\nHandle technical terms with standardized Vietnamese equivalents.\nRetain citations, references, and hyperlinks in their original format.\nAdjust tone to match the document’s purpose (formal, instructional, etc.).\n(Return only result)"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        2880,
+        -360
+      ],
+      "id": "edc1f282-f4eb-47b3-9d57-387295c9c1ea",
+      "name": "AI Agent7"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        2880,
+        -160
+      ],
+      "id": "455b2b5b-f080-4ed2-9eb8-f56444826c78",
+      "name": "Google Gemini Chat Model5",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ZSOZ91594U8CyuHi",
+          "name": "Gemini Acc"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=/tmp/n8n_rewrite/new/{{ $('DefineVar').item.json.name }}.md",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        3440,
+        -360
+      ],
+      "id": "59bf2bb0-f15e-4861-9c03-a2800eb90e3e",
+      "name": "Read/Write Files from Disk1"
+    },
+    {
+      "parameters": {
+        "command": "=find /tmp/n8n_rewrite/new -name {{ $json.name }}"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1260,
+        -140
+      ],
+      "id": "ba403d95-4b6d-4d95-875b-542116b8ebb0",
+      "name": "Execute Command"
+    },
+    {
+      "parameters": {
+        "command": "ls /tmp"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        -120
+      ],
+      "id": "85e10945-4a44-422e-8e23-2c3527dc70fb",
+      "name": "Execute Command1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "90c840d3-0836-48de-8566-5912a3c57923",
+              "leftValue": "={{ $json.stdout }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -160,
+        -120
+      ],
+      "id": "dcb6294f-6e97-43ea-bb89-f301d4968fb3",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "command": "cd /tmp && mkdir n8n_rewrite && cd /tmp/n8n_rewrite && mkdir new && mkdir raw"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -400
+      ],
+      "id": "6e3c8e9f-b539-43f3-840c-8f50e36456d5",
+      "name": "Execute Command2"
+    }
+  ],
+  "pinData": {
+    "Schedule Trigger": [
+      {
+        "json": {
+          "timestamp": "2025-05-26T02:56:12.004+00:00",
+          "Readable date": "May 26th 2025, 2:56:12 am",
+          "Readable time": "2:56:12 am",
+          "Day of week": "Monday",
+          "Year": "2025",
+          "Month": "May",
+          "Day of month": "26",
+          "Hour": "02",
+          "Minute": "56",
+          "Second": "12",
+          "Timezone": "UTC (UTC+00:00)"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Execute Command1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "XML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "XML": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "PickRandom",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PickRandom": {
+      "main": [
+        [
+          {
+            "node": "DefineVar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Convert to File4",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DefineVar": {
+      "main": [
+        [
+          {
+            "node": "Execute Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File4": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent7": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent7",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command1": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Execute Command2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ae20cdb9-07bf-458b-8455-c9fb5c3c8c78",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "98bfed1c0f22fa9e07d0e38dc58da94b0281d63095bd4ba14894d42a90a063e3"
+  },
+  "id": "gz46GzgwWZloZ9QR",
+  "tags": []
+}

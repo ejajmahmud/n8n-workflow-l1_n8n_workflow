@@ -1,0 +1,532 @@
+{
+  "name": "RewriteByAuthor",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "tscxnIjf30t0rxKQ",
+          "mode": "list",
+          "cachedResultName": "RewriteWithAgent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "chatInput": "={{ $json.chatInput }}",
+            "path": "={{ $json.path }}",
+            "style": "={{ $json.style }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "chatInput",
+              "displayName": "chatInput",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "style",
+              "displayName": "style",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "path",
+              "displayName": "path",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "each",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        400,
+        500
+      ],
+      "id": "a79bb66b-01b6-4519-93da-7ddf98416057",
+      "name": "Execute Workflow"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const item = {\n  id: $json.id,\n  name: $json.name,\n  style: $json.style,\n  folder: `/tmp/saba-review2/${$json.id}`\n}\n\nreturn item;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        200
+      ],
+      "id": "c11a9449-7db3-43ec-8293-a90f0a90d12b",
+      "name": "GetFolderName"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const gameName = $('Trigger').item.json.gameName\nconst folder = $json.folder\n$json.path = `${folder}/${gameName.replaceAll(\" \",\"_\").toLowerCase()}.html`\n$json.style = $('Trigger').item.json.style\n$json.chatInput = `${gameName}`\n\nreturn $input.item;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        180,
+        500
+      ],
+      "id": "401acb29-6afe-4279-a8af-eed69f6d6e11",
+      "name": "DefineVar"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a0da10f0-fed9-417f-af3c-60fedbdd8fc5",
+              "leftValue": "={{$json.authorType}}",
+              "rightValue": "new",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -680,
+        360
+      ],
+      "id": "e754bdbf-5805-4bbd-91e6-b941b71514e8",
+      "name": "CheckExistAuthor"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "gameName"
+            },
+            {
+              "name": "author",
+              "type": "any"
+            },
+            {
+              "name": "authorType"
+            },
+            {
+              "name": "style"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -860,
+        360
+      ],
+      "id": "cebfe608-219d-4914-9cdd-a27d565a59d1",
+      "name": "Trigger"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "list",
+          "cachedResultName": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "writer",
+          "mode": "list",
+          "cachedResultName": "writer"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $('Trigger').item.json.author }}",
+            "style": "={{ $('Trigger').item.json.style }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "style",
+              "displayName": "style",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "folder",
+              "displayName": "folder",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -420,
+        200
+      ],
+      "id": "354e5f60-1add-4a4e-b258-2aa78672c91b",
+      "name": "InsertAuthor",
+      "credentials": {
+        "postgres": {
+          "id": "DdV4xf56xRHB930N",
+          "name": "Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "list",
+          "cachedResultName": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "writer",
+          "mode": "list",
+          "cachedResultName": "writer"
+        },
+        "returnAll": true,
+        "where": {
+          "values": [
+            {
+              "column": "id",
+              "value": "={{$('Trigger').item.json.author}}"
+            }
+          ]
+        },
+        "options": {
+          "outputColumns": [
+            "*"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -420,
+        500
+      ],
+      "id": "c081e168-26d3-42ec-b176-b6750e81afa5",
+      "name": "GetFolderOfAuthor",
+      "credentials": {
+        "postgres": {
+          "id": "DdV4xf56xRHB930N",
+          "name": "Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "command": "=cd /tmp/saba-review2 && mkdir {{ $json.id }}"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "2f40711a-96fe-4c2b-ad1f-a3675f22ef4d",
+      "name": "CreateFolder"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "list",
+          "cachedResultName": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "writer",
+          "mode": "list",
+          "cachedResultName": "writer"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "folder": "={{$json.folder}}",
+            "id": "={{$json.id}}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "style",
+              "displayName": "style",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "folder",
+              "displayName": "folder",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "outputColumns": [
+            "*"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -40,
+        240
+      ],
+      "id": "36fea313-c5ac-4cf3-a913-15d282558bdd",
+      "name": "UpdateFolder",
+      "credentials": {
+        "postgres": {
+          "id": "DdV4xf56xRHB930N",
+          "name": "Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Trigger from other workflow\nInput:\n```json\n{\n  \"gameName\": name of the game to search,\n  \"author\": ID of the author (if exists), otherwise the author's name,\n  \"authorType\": either 'existing' or 'new',\n  \"style\": style of the author (only used if authorType is 'new')\n}\n```",
+        "height": 420,
+        "width": 660
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1400,
+        100
+      ],
+      "typeVersion": 1,
+      "id": "0a537f60-2efc-4435-9bdb-e4e7c9e69514",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "### This workflow retrieves information about the author to determine the appropriate style and folder for the rewrite process.",
+        "height": 760,
+        "width": 1120
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -700,
+        -80
+      ],
+      "typeVersion": 1,
+      "id": "cf1acd45-122f-4450-94f9-7c53e7a5ad6c",
+      "name": "Sticky Note1"
+    }
+  ],
+  "pinData": {
+    "Trigger": [
+      {
+        "json": {
+          "gameName": "Loki Loot",
+          "author": "1",
+          "authorType": "existing",
+          "style": "Humorous"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "GetFolderName": {
+      "main": [
+        [
+          {
+            "node": "UpdateFolder",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "CreateFolder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DefineVar": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CheckExistAuthor": {
+      "main": [
+        [
+          {
+            "node": "InsertAuthor",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GetFolderOfAuthor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "CheckExistAuthor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "InsertAuthor": {
+      "main": [
+        [
+          {
+            "node": "GetFolderName",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetFolderOfAuthor": {
+      "main": [
+        [
+          {
+            "node": "DefineVar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UpdateFolder": {
+      "main": [
+        [
+          {
+            "node": "DefineVar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4c67dbd8-522f-4f5e-bc4f-f5428af49458",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "98bfed1c0f22fa9e07d0e38dc58da94b0281d63095bd4ba14894d42a90a063e3"
+  },
+  "id": "eLVQ7xAf9O2npQXj",
+  "tags": []
+}

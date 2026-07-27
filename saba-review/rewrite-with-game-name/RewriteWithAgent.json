@@ -1,0 +1,382 @@
+{
+  "name": "RewriteWithAgent",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=You are a content creator. Your style is {{$json.style}}. Your task is to write a compelling and original review of a specific game to single html file. To do this, gather and synthesize information from multiple reputable game review websites such as slotsjudge, aboutslots. Use search_game_tool to search url to crawl, after that use crawl_website_tool to get content and images. Your review should be well-structured, engaging, and informative, highlighting the game's strengths, weaknesses, gameplay mechanics, graphics, story, and overall experience. Should have images of game include. The output must be html format."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        320,
+        0
+      ],
+      "id": "3057d18d-d1ad-4fdf-8e34-2d81155c2244",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "InternVL3-8B-Instruct-UD-Q8_K_XL.gguf",
+          "mode": "list",
+          "cachedResultName": "InternVL3-8B-Instruct-UD-Q8_K_XL.gguf"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        100,
+        320
+      ],
+      "id": "17d8812b-103e-4a18-acae-88df2d12591c",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "Y7dm5KE2jAoAW5sD",
+          "name": "OpenAi account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        220,
+        240
+      ],
+      "id": "72412316-63b3-43df-865a-7e555eb29ef3",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "R0Dx4QByuUoaUZjB",
+          "name": "GeminiAcc"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "={{ $('Trigger').item.json.path }}",
+        "dataPropertyName": "=data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        0
+      ],
+      "id": "d73fc150-aa10-45ee-a438-5b220fbe94d9",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "chatInput"
+            },
+            {
+              "name": "style"
+            },
+            {
+              "name": "path"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e4b99a3f-ffa3-4ce5-ad44-6d03b843ba1a",
+      "name": "Trigger"
+    },
+    {
+      "parameters": {
+        "name": "search_game_tool",
+        "description": "Call this tool to get url of reviews of game.",
+        "workflowId": {
+          "__rl": true,
+          "value": "VxxIQXzhmHVWVM3T",
+          "mode": "list",
+          "cachedResultName": "SearchUrlSlotGame"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "key": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('key', `Game name to search. Use only game name to this field.`, 'string') }}"
+          },
+          "matchingColumns": [
+            "key"
+          ],
+          "schema": [
+            {
+              "id": "key",
+              "displayName": "key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        640,
+        460
+      ],
+      "id": "a1a2e1ab-01b1-4ffd-8d08-478712bf7e93",
+      "name": "SeachUrl"
+    },
+    {
+      "parameters": {
+        "name": "crawl_website_tool",
+        "description": "Call this tool to get content of a review game with url found by search_game_tool.",
+        "workflowId": {
+          "__rl": true,
+          "value": "Z98kSDtYNiNlFI0h",
+          "mode": "list",
+          "cachedResultName": "CrawlWebsite"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "url": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('url', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "url"
+          ],
+          "schema": [
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        1220,
+        380
+      ],
+      "id": "b405bb38-f11f-444a-a33f-991108b128b7",
+      "name": "CrawlTool"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "\nconst output = $json.output.replace(/<think>[\\s\\S]*?<\\/think>/g, '').replace(\"```html\\n\",\"\").replace(\"```\",\"\");\n\nreturn {\n  output\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        0
+      ],
+      "id": "79065f8d-5229-4550-b6ca-509f9d49f002",
+      "name": "Reformat"
+    },
+    {
+      "parameters": {
+        "content": "## Trigger from other workflows\n\nInput:\n```json\n{\n\"chatInput\": Input game name,\n\"style\": style of review,\n\"path\": path of folder to save html\n}\n```",
+        "height": 360,
+        "width": 480
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -280,
+        -220
+      ],
+      "typeVersion": 1,
+      "id": "a9f141e6-4b1c-499d-9f33-bc936b38f498",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## n8n workflow tool\nCall this tool to get url to crawl",
+        "height": 240,
+        "width": 400
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        360,
+        360
+      ],
+      "typeVersion": 1,
+      "id": "57304400-a9b4-4bd9-9584-a013c6c79487",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## n8n workflow tool\nCall this tool to crawl a webpage with url",
+        "height": 240,
+        "width": 400
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        920,
+        320
+      ],
+      "typeVersion": 1,
+      "id": "96954109-9861-4b86-9524-0a4bf4bbdfe6",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "output",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        920,
+        0
+      ],
+      "id": "716fbcb0-6417-4afe-bdc5-c43a24335406",
+      "name": "ConvertContentToFile"
+    },
+    {
+      "parameters": {
+        "content": "## AI Agent\nAgent will decide tool to call (can describe in system prompt to do that). Based on result from tool, agent will rewrite follow request from user.",
+        "height": 260,
+        "width": 400
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        260,
+        -140
+      ],
+      "typeVersion": 1,
+      "id": "5b42f7c4-1458-411f-8cff-96a201ab9014",
+      "name": "Sticky Note3"
+    }
+  ],
+  "pinData": {
+    "Trigger": [
+      {
+        "json": {
+          "chatInput": "Review game Sweet Bonanza",
+          "style": "Focuses on games with high volatility, big win potential, and bonus buy features. They're interested in max bets and chasing massive payouts. They often discuss bankroll management for large sums.",
+          "path": "/tmp/saba-review/jackpot_jinx/sweet_bonanza.html"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Reformat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SeachUrl": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CrawlTool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reformat": {
+      "main": [
+        [
+          {
+            "node": "ConvertContentToFile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ConvertContentToFile": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9770e3c0-b5d7-4bbf-9d8e-3867941dc9bf",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "98bfed1c0f22fa9e07d0e38dc58da94b0281d63095bd4ba14894d42a90a063e3"
+  },
+  "id": "tscxnIjf30t0rxKQ",
+  "tags": []
+}

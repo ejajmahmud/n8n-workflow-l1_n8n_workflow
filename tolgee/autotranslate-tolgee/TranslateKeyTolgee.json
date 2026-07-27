@@ -1,0 +1,440 @@
+{
+  "name": "TranslateKeyTolgee",
+  "nodes": [
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "delete $json.keyName\ndelete $json.keyNamespace\ndelete $json.languageTag\ndelete $json.project\ndelete $json.context\n// if (!$json.context || $json.context.length === 0) {\n//   delete $json.context\n// }\n\nreturn {\n  ...$json,\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1040,
+        80
+      ],
+      "id": "8731bf59-7f43-4056-8312-80e357322201",
+      "name": "ModifyField"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "keyName"
+            },
+            {
+              "name": "keyNamespace"
+            },
+            {
+              "name": "source"
+            },
+            {
+              "name": "translateTo"
+            },
+            {
+              "name": "languageTag"
+            },
+            {
+              "name": "project",
+              "type": "number"
+            },
+            {
+              "name": "context"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1400,
+        80
+      ],
+      "id": "54d2a4f1-c5e7-4fea-9a65-b022810f5b0d",
+      "name": "TriggerNode"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const result = JSON.parse($json?.output ?? \"{}\")\nconst translateResult = result?.output ?? \"\"\nreturn {\n  key: $('TriggerNode').item.json.keyName,\n  namespace: $('TriggerNode').item.json.keyNamespace,\n  translations: {\n    [$('TriggerNode').item.json.languageTag]: translateResult\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -440,
+        80
+      ],
+      "id": "9311d9c9-cd81-4c49-a1d2-2e6546046196",
+      "name": "Output"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://tolgee.sabagame.com/v2/projects/{{ $('TriggerNode').item.json.project }}/translations",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "={{ $json.key }}"
+            },
+            {
+              "name": "namespace",
+              "value": "={{ $json.namespace }}"
+            },
+            {
+              "name": "translations",
+              "value": "={{ $json.translations }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        0,
+        200
+      ],
+      "id": "794db80a-4e58-4c89-8f27-85add27d1e72",
+      "name": "CreateKey",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "9bIOdqQPZKY66JXg",
+          "name": "Tolgee n8n agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3881b43b-4e69-4647-9d92-21d9203363fc",
+              "leftValue": "={{ $json.translations[$('TriggerNode').item.json.languageTag] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -240,
+        80
+      ],
+      "id": "ba3d0d23-5152-45af-b1e5-f5d87a8f8e62",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "219e4f7f-9866-46f6-9b96-cec64787ddbf",
+              "leftValue": "={{ $json.source }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -1220,
+        80
+      ],
+      "id": "55e78839-c7a9-406c-a4ae-0cc83020b501",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "LuSc7dLQICj4HjiD",
+          "mode": "list",
+          "cachedResultName": "TranslateKeyTolgee"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "keyName": "={{ $('TriggerNode').item.json.keyName }}",
+            "keyNamespace": "={{ $('TriggerNode').item.json.keyNamespace }}",
+            "source": "={{ $('TriggerNode').item.json.source }}",
+            "translateTo": "={{ $('TriggerNode').item.json.translateTo }}",
+            "languageTag": "={{ $('TriggerNode').item.json.languageTag }}",
+            "project": "={{ $('TriggerNode').item.json.project }}",
+            "context": "={{ $('TriggerNode').item.json.context }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "keyName",
+              "displayName": "keyName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "keyNamespace",
+              "displayName": "keyNamespace",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "translateTo",
+              "displayName": "translateTo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "languageTag",
+              "displayName": "languageTag",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "project",
+              "displayName": "project",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number"
+            },
+            {
+              "id": "context",
+              "displayName": "context",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "each",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "d781b0a9-dc38-4e9d-bd78-598d76933d3c",
+      "name": "Execute Workflow"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{JSON.stringify($json)}}",
+        "options": {
+          "systemMessage": "I want you to act as a professional betting game localizer who can accurately translate English text into any target language specified by the user. The content should be in json format (not you markdown).\nExample: \nUser: { \"source\": \"Hello\", \"translateTo\": \"Vietnamese\" }\nSystem: { output: \"Xin chào\"}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        -800,
+        80
+      ],
+      "id": "e00fd038-477d-4e92-9a32-1b5aa9cc847d",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -840,
+        320
+      ],
+      "id": "fb49f893-789f-407d-9b69-df97281925b3",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "Y7dm5KE2jAoAW5sD",
+          "name": "OpenAi account 5"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "TriggerNode": [
+      {
+        "json": {
+          "keyName": "FSB_template_banner_content",
+          "keyNamespace": "FreeSpinBonus",
+          "source": "Unlock Exciting Rewards in Our New Free Spin Event\nJoin Now and Seize Your Chance To Win Big Before It’s Gone!",
+          "translateTo": "Filipino (Philippines)",
+          "languageTag": "fil-PH",
+          "project": 8,
+          "context": "A game"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "ModifyField": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TriggerNode": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Output": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "CreateKey",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "ModifyField",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "0d1d30ed-aba1-4ad2-b797-34ec9b271ca5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "98bfed1c0f22fa9e07d0e38dc58da94b0281d63095bd4ba14894d42a90a063e3"
+  },
+  "id": "LuSc7dLQICj4HjiD",
+  "tags": [
+    {
+      "createdAt": "2025-06-04T08:21:12.715Z",
+      "updatedAt": "2025-06-04T08:21:12.715Z",
+      "id": "CGdfRXMTdzjpLRpq",
+      "name": "in_use"
+    }
+  ]
+}

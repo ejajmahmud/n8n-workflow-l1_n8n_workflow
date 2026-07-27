@@ -1,0 +1,316 @@
+{
+  "name": "SearchUrlSlotGame",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        520,
+        200
+      ],
+      "id": "21e25e20-8ea1-4331-b523-aa48f70adceb",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "key"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -660,
+        140
+      ],
+      "id": "acf2273d-50b9-4729-bc64-630e80ee44d5",
+      "name": "TriggerNode"
+    },
+    {
+      "parameters": {
+        "url": "https://slotsjudge.com/sitemap.xml",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -340,
+        20
+      ],
+      "id": "38b6f4e8-b1f6-44a6-87ac-cf8be973a052",
+      "name": "GetSiteMapSlotsjudge"
+    },
+    {
+      "parameters": {
+        "url": "https://www.aboutslots.com/sitemap.xml",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -320,
+        320
+      ],
+      "id": "d2faf47e-fbb4-401e-910b-8c22c558c268",
+      "name": "GetSiteMapAboutslots"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.xml",
+      "typeVersion": 1,
+      "position": [
+        -120,
+        20
+      ],
+      "id": "167e54fb-cb85-4860-9266-91f18511ead8",
+      "name": "ConvertSitemapToJson"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.xml",
+      "typeVersion": 1,
+      "position": [
+        -120,
+        320
+      ],
+      "id": "772213c2-c725-4777-959f-87beed90db95",
+      "name": "ConvertSitemapToJson1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const chat = $('TriggerNode').first().json.key ?? \"\";\nif (chat === \"\") {\n  return [];\n}\nconst key = chat.toLowerCase().trim().replaceAll(\" \",\"-\")\nconst result = [];\nfor (const item of $input.first().json.urlset.url) {\n  const otherSlot = item.loc.replace(\"slotjudge\",\"\")\n  if (otherSlot.indexOf(key) != -1 && otherSlot.indexOf(\"slot\") != -1) {\n    result.push(item)\n  }\n}\n\n\nreturn result;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        100,
+        20
+      ],
+      "id": "769de6ce-2883-4702-ac29-47cbdf545207",
+      "name": "SearchGame"
+    },
+    {
+      "parameters": {
+        "jsCode": "const chat = $('TriggerNode').first().json.key ?? \"\";\nif (chat === \"\") {\n  return [];\n}\nconst key = chat.toLowerCase().trim().replaceAll(\" \",\"-\")\nconst result = [];\nfor (const item of $input.first().json.urlset.url) {\n  const otherSlot = item.loc.replace(\"aboutslots\",\"\")\n  if (otherSlot.indexOf(key) != -1 && otherSlot.indexOf(\"slot\") != -1) {\n    result.push(item)\n  }\n}\n\n\nreturn result;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        100,
+        320
+      ],
+      "id": "3a3924dc-4c97-4c3a-a861-61f1e0d0b9ce",
+      "name": "SearchGame1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "36b74362-87e4-440d-a88d-1e58474c576a",
+              "name": "url",
+              "value": "={{ $json.loc }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        300,
+        20
+      ],
+      "id": "aa0d335d-d44a-4034-9477-9e8e829fa277",
+      "name": "ReFormatData"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "36b74362-87e4-440d-a88d-1e58474c576a",
+              "name": "url",
+              "value": "={{ $json.loc }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        300,
+        320
+      ],
+      "id": "ed6ce781-6402-43c0-a8a5-5611829b9405",
+      "name": "ReFormatData1"
+    },
+    {
+      "parameters": {
+        "content": "## Trigger from other workflow\nInput:\n```json\n{\n \"key\": game name to search\n}\n```",
+        "height": 340,
+        "width": 400
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -960,
+        -40
+      ],
+      "typeVersion": 1,
+      "id": "d556b1f6-9e7e-4717-9987-4d6aa54b2ba4",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Handle search\nEach site will have a different way of searching. We need to implement a search flow for each site.",
+        "height": 680,
+        "width": 840
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -380,
+        -180
+      ],
+      "typeVersion": 1,
+      "id": "30d8e48f-4546-48cb-b990-caca1b2a2286",
+      "name": "Sticky Note1"
+    }
+  ],
+  "pinData": {
+    "TriggerNode": [
+      {
+        "json": {
+          "key": "Sweet Bonanza review"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "TriggerNode": {
+      "main": [
+        [
+          {
+            "node": "GetSiteMapAboutslots",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GetSiteMapSlotsjudge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetSiteMapSlotsjudge": {
+      "main": [
+        [
+          {
+            "node": "ConvertSitemapToJson",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetSiteMapAboutslots": {
+      "main": [
+        [
+          {
+            "node": "ConvertSitemapToJson1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ConvertSitemapToJson": {
+      "main": [
+        [
+          {
+            "node": "SearchGame",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ConvertSitemapToJson1": {
+      "main": [
+        [
+          {
+            "node": "SearchGame1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SearchGame": {
+      "main": [
+        [
+          {
+            "node": "ReFormatData",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SearchGame1": {
+      "main": [
+        [
+          {
+            "node": "ReFormatData1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ReFormatData": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ReFormatData1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f7720dc1-de6b-42ab-a944-c1a905001389",
+  "meta": {
+    "instanceId": "98bfed1c0f22fa9e07d0e38dc58da94b0281d63095bd4ba14894d42a90a063e3"
+  },
+  "id": "VxxIQXzhmHVWVM3T",
+  "tags": []
+}

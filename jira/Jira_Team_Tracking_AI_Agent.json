@@ -1,0 +1,171 @@
+{
+  "name": "Jira Team Tracking AI Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "You are a Jira progress assistant that manages team epics and generates inventory cost reports. Follow these steps strictly:\n\n1. **Team Identification**:\n   - Extract the team name from the user's message (e.g., \"Team Phoenix\").\n   - If no team is specified, use the default filter:  \n     `\"In-Progress Epic Inventory Cost\"`.\n\n2. **Filter Retrieval**:\n   - Fetch all Jira filters.\n   - If a team is identified, find the corresponding filter (e.g., `\"Team Phoenix Epic Inventory\"`).\n\n3. **JQL Execution**:\n   - Extract the `jql` from the filter's response.\n   - Search issues with filter\n\n4. **Report Generation**:\n   - Calculate inventory cost per epic based on aggregate time spent in seconds and convert it to hrs\n   - Format the response as:  \n     ```markdown\n     ## [Team: {Team Name}] Inventory Cost Report\n     | Epic | Progress | Time Spent (hrs) | Cost |\n     ```\n   - If data is missing, state:  \n     `⚠️ Cannot calculate cost for {Epic}: missing time spent`.\n\n5. **Error Handling**:\n   - If no filter exists, respond:  \n     `No filter found for team \"{Team Name}\". Using default filter.`\n   - If no issues match, say:  \n     `No active epics found for {Team Name}.`"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        -1140,
+        -900
+      ],
+      "id": "6e42db1e-72f0-45bc-af3f-9aed2eafa275",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "o3-mini",
+          "mode": "list",
+          "cachedResultName": "o3-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -1240,
+        -680
+      ],
+      "id": "73387bff-10b3-400b-aae0-077b3db946f9",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "zPsZUa1Qh9Av5ozB",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1440,
+        -900
+      ],
+      "id": "e409fdbf-ba68-4998-84c1-2ff02ca8da9f",
+      "name": "When chat message received",
+      "webhookId": "0ff34156-855b-4b7e-a20e-e77dcd1145e5"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Get all Epics by JQL from filter",
+        "url": "https://onetw.atlassian.net/rest/api/2/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendQuery": true,
+        "parametersQuery": {
+          "values": [
+            {
+              "name": "jql"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        -940,
+        -680
+      ],
+      "id": "ec783078-8f5a-450b-88e1-236fcdd65e11",
+      "name": "List Issues by Filter",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "SCi8q4mAlLWorF94",
+          "name": "Jira Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Get JIRA filters defined in GameLab (GL) project",
+        "url": "https://onetw.atlassian.net/rest/api/3/filter/11545",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        -720,
+        -680
+      ],
+      "id": "e6189a22-f3e0-4d4e-9cf7-a117f8f5f196",
+      "name": "Get Jira Filters",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "SCi8q4mAlLWorF94",
+          "name": "Jira Account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Issues by Filter": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Jira Filters": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "aa64859e-7b8c-42bb-939a-2b94de0021b4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "98bfed1c0f22fa9e07d0e38dc58da94b0281d63095bd4ba14894d42a90a063e3"
+  },
+  "id": "mhAcC0DPACI7jaY5",
+  "tags": []
+}

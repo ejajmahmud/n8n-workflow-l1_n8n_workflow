@@ -1,0 +1,679 @@
+{
+  "name": "GitLab New Config File",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -260,
+        -220
+      ],
+      "id": "ac88a071-fe99-4394-b5a4-c43d8ea33c85",
+      "name": "Trigger"
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        660,
+        -220
+      ],
+      "id": "4b5e5a87-146f-4b5a-b4a8-425fb4830bf7",
+      "name": "Loop Over Items",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://git3.nexdev.net/api/v4/projects/{{$('Loop Over Items').item.json.id}}/repository/commits",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "gitlabApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"branch\": \"{{$('StartupConfigs').last().json.newBranchName}}\",\n  \"commit_message\": \"chore: update sentry for local\",\n   \"actions\": {{ JSON.stringify($input.all().map(item => item.json).filter(item => item.action)) }}\n}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -340,
+        600
+      ],
+      "id": "005e06ec-552f-4132-85f2-e242dfd80458",
+      "name": "Commit & Push",
+      "executeOnce": true,
+      "credentials": {
+        "gitlabApi": {
+          "id": "wcbdWdTeCB9d48Gi",
+          "name": "GitLab account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputItems = $input.all();\nconst ids = inputItems.map(item => item.json.map(x => ({id: x.id, \"default_branch\": x.default_branch}))).flat().sort((a,b) => a.id - b.id);\nreturn ids;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -640,
+        620
+      ],
+      "id": "82c115bf-fde5-406b-921c-d3bd3928223c",
+      "name": "Filter project id",
+      "alwaysOutputData": false,
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://git3.nexdev.net/api/v4/projects/{{$('Loop Over Items').item.json.id}}/merge_requests",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "gitlabApi",
+        "sendQuery": true,
+        "specifyQuery": "json",
+        "jsonQuery": "={\n  \"source_branch\": \"{{$('StartupConfigs').last().json.newBranchName}}\",\n  \"target_branch\": \"{{$('Loop Over Items').item.json.default_branch}}\",\n  \"title\" :\"Update sentry local\",\n  \"remove_source_branch\": true\n}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -60,
+        600
+      ],
+      "id": "56765e4b-067b-4d3f-b7ab-64a1dcf634b6",
+      "name": "Create MR",
+      "executeOnce": true,
+      "credentials": {
+        "gitlabApi": {
+          "id": "wcbdWdTeCB9d48Gi",
+          "name": "GitLab account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  newBranchName: \"kl-deployment\",\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        40,
+        -220
+      ],
+      "id": "2c0188a2-51da-4d0f-af1e-66b8684a4e57",
+      "name": "StartupConfigs"
+    },
+    {
+      "parameters": {
+        "url": "https://git3.nexdev.net/api/v4/groups/l1%2fgame-services/projects?page=1&per_page=100&membership=true&archived=false",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "gitlabApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        280,
+        -220
+      ],
+      "id": "be4642b9-4583-48ba-a3ad-6cbb0e064c88",
+      "name": "Get all game service repositories",
+      "credentials": {
+        "gitlabApi": {
+          "id": "CaFzD7fP15mjxSRs",
+          "name": "Gitlab Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2360,
+        -80
+      ],
+      "id": "da842708-7e41-4151-8047-ae9b6afbe503",
+      "name": "Wait",
+      "webhookId": "bd37a080-219b-4fbd-a97b-aeb18399d23e"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ce9b92e6-7ae8-4d6d-97d8-ad93e769f89c",
+              "leftValue": "={{ $json.statusCode }}",
+              "rightValue": 200,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1440,
+        -200
+      ],
+      "id": "7df7ac39-a43e-47f3-b94c-ed6e21e18038",
+      "name": "File exists?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const systems = [\n  { system: \"sc1\", env: [\"PROD\"], sentry: \"https://50e405ebce7003a0e1edbda2bf28b14c@sentry-k8s.lumigame.com/3\" },\n];\nreturn systems;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        -380
+      ],
+      "id": "98300c7a-fbff-4a37-9ad9-b70d5fe46703",
+      "name": "SC1",
+      "alwaysOutputData": false,
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "jsCode": "const systems = [\n  {\n    system: \"vg2\",\n    env: [\"PROD\"],\n    sentry:\n      \"https://8eb9632f2663e57c838ec83febbee14f@sentry-k8s.lumigame.com/4\",\n  },\n];\nreturn systems;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        -200
+      ],
+      "id": "308f4343-e0d2-496b-b999-9f39bc4cadb8",
+      "name": "VG2",
+      "alwaysOutputData": false,
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "url": "=https://git3.nexdev.net/api/v4/projects/{{ $('Loop Over Items').item.json.id }}/repository/files/configs%2F{{ $json.system }}%2Fapp-configs.PROD.js/raw?{{$('StartupConfigs').last().json.newBranchName}}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "gitlabApi",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        -200
+      ],
+      "id": "a3adbeb5-2bee-4e4a-9c97-66af9f4e93b2",
+      "name": "Get PROD Config",
+      "alwaysOutputData": true,
+      "credentials": {
+        "gitlabApi": {
+          "id": "CaFzD7fP15mjxSRs",
+          "name": "Gitlab Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ce9b92e6-7ae8-4d6d-97d8-ad93e769f89c",
+              "leftValue": "={{ $json.statusCode }}",
+              "rightValue": 200,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        520,
+        360
+      ],
+      "id": "0a052868-ee3e-485d-bb11-ff33a8d6dd22",
+      "name": "File exists?2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nconst item = $input.first();\nlet newData = item.json.data;\nnewData = newData.replaceAll(\n  /l1_auth_api_prod/gi,\n  `l1-auth-api-prod`,\n);\n\nnewData = newData.replaceAll(\n  /l1_game_api_prod/gi,\n  `l1-game-api-prod`,\n);\n\nnewData = newData.replaceAll(\n  /l1_user_service_prod/gi,\n  `l1-user-service-prod`,\n);\n\nnewData = newData.replaceAll(\n  /l1_game_management_service_prod/gi,\n  `l1-game-management-service-prod`,\n);\n\nnewData = newData.replaceAll(\n  /l1_game_result_prod/gi,\n  `l1-game-result-prod`,\n);\n\nnewData = newData.replaceAll(\n  /10.99.99.53:39110,10.99.99.54:39110,10.99.99.188:39110,10.99.99.187:39110/gi, `10.146.34.26:39110,10.146.34.27:39110,10.146.34.30:39110,10.146.34.28:39110`,\n);\n\nnewData = newData.replaceAll(\n  /10.99.99.54:27101,10.99.99.53:27102/gi,  `10.146.34.26:39110,10.146.34.27:39110,10.146.34.30:39110,10.146.34.28:39110`,\n);\n\nif (item.json.data !== newData) {\n  const result = {\n    action: \"update\",\n    content: newData,\n  };\n\n  return result;\n}\n\nreturn {};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        820,
+        340
+      ],
+      "id": "b915320e-8f63-4ab3-b7aa-9c3a7b0b4ef8",
+      "name": "Update KL configs",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "url": "=https://git3.nexdev.net/api/v4/projects/488/repository/files/configs%2Fsc1%2Fapp-configs.PROD.js/raw?{{$('StartupConfigs').last().json.newBranchName}}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "gitlabApi",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        260,
+        360
+      ],
+      "id": "3365d9ff-5b58-462b-b63c-a6f2af9ae1a9",
+      "name": "Get PROD config of Sedie",
+      "alwaysOutputData": true,
+      "credentials": {
+        "gitlabApi": {
+          "id": "CaFzD7fP15mjxSRs",
+          "name": "Gitlab Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://git3.nexdev.net/api/v4/projects/14/repository/files/configs%2Fsc1%2Fapp-configs.KLPROD.js",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "gitlabApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"branch\": \"{{$('StartupConfigs').last().json.newBranchName}}\",\n  \"commit_message\": \"chore: init KLPROD config\",\n   \"content\": {{ JSON.stringify($json.content) }}\n}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1120,
+        340
+      ],
+      "id": "68a438ae-e24e-4b72-8cda-b028bc74ad48",
+      "name": "Create File",
+      "executeOnce": true,
+      "credentials": {
+        "gitlabApi": {
+          "id": "CaFzD7fP15mjxSRs",
+          "name": "Gitlab Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nconst item = $input.first();\nlet newData = item.json.data;\nnewData = newData.replaceAll(\n  /_auth_api_prod/gi,\n  `-auth-api-prod`,\n);\n\nnewData = newData.replaceAll(\n  /_game_api_prod/gi,\n  `-game-api-prod`,\n);\n\nnewData = newData.replaceAll(\n  /_user_service_prod/gi,\n  `-user-service-prod`,\n);\n\nnewData = newData.replaceAll(\n  /_game_management_service_prod/gi,\n  `-game-management-service-prod`,\n);\n\nnewData = newData.replaceAll(\n  /_game_result_prod/gi,\n  `-game-result-prod`,\n);\n\nnewData = newData.replaceAll(\n  /10.99.99.53:39210,10.99.99.54:39210,10.99.99.188:39210,10.99.99.187:39210/gi, `10.146.34.26:39210,10.146.34.27:39210,10.146.34.30:39210,10.146.34.28:39210`,\n);\n\nnewData = newData.replaceAll(\n  /10.99.99.53:37101,10.99.99.54:37102/gi,  `10.146.34.26:39110,10.146.34.27:39110,10.146.34.30:39110,10.146.34.28:39110`,\n);\n\nif (item.json.data !== newData) {\n  const result = {\n    action: \"update\",\n    content: newData,\n  };\n\n  return result;\n}\n\nreturn {};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1740,
+        -220
+      ],
+      "id": "e1f98bd6-d5d4-4562-84a3-53ae4b17a642",
+      "name": "Update KLPROD VG2",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nconst item = $input.first();\nlet newData = item.json.data;\nnewData = newData.replaceAll(\n  /l1_auth_api_prod/gi,\n  `l1-auth-api-prod`,\n);\n\nnewData = newData.replaceAll(\n  /l1_game_api_prod/gi,\n  `l1-game-api-prod`,\n);\n\nnewData = newData.replaceAll(\n  /l1_user_service_prod/gi,\n  `l1-user-service-prod`,\n);\n\nnewData = newData.replaceAll(\n  /l1_game_management_service_prod/gi,\n  `l1-game-management-service-prod`,\n);\n\nnewData = newData.replaceAll(\n  /l1_game_result_prod/gi,\n  `l1-game-result-prod`,\n);\n\nnewData = newData.replaceAll(\n  /10.99.99.53:39110,10.99.99.54:39110,10.99.99.188:39110,10.99.99.187:39110/gi, `10.146.34.26:39110,10.146.34.27:39110,10.146.34.30:39110,10.146.34.28:39110`,\n);\n\nnewData = newData.replaceAll(\n  /10.99.99.54:27101,10.99.99.53:27102/gi,  `10.146.34.26:39110,10.146.34.27:39110,10.146.34.30:39110,10.146.34.28:39110`,\n);\n\nif (item.json.data !== newData) {\n  const result = {\n    action: \"update\",\n    content: newData,\n  };\n\n  return result;\n}\n\nreturn {};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1740,
+        -440
+      ],
+      "id": "3ff30f51-5a91-47e3-bdb7-822f3f46a039",
+      "name": "Update KLPROD SC1",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://git3.nexdev.net/api/v4/projects/{{ $('Loop Over Items').item.json.id }}/repository/files/configs%2Fvg2%2Fapp-configs.KLPROD.js",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "gitlabApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"branch\": \"{{$('StartupConfigs').last().json.newBranchName}}\",\n  \"commit_message\": \"chore: init KLPROD VG2 config\",\n   \"content\": {{ JSON.stringify($json.content) }}\n}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2020,
+        -220
+      ],
+      "id": "a027c0f3-ae43-4974-9506-94a8e8639a2f",
+      "name": "Create KLPROD VG2",
+      "executeOnce": true,
+      "credentials": {
+        "gitlabApi": {
+          "id": "CaFzD7fP15mjxSRs",
+          "name": "Gitlab Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://git3.nexdev.net/api/v4/projects/{{ $('Loop Over Items').item.json.id }}/repository/files/configs%2Fsc1%2Fapp-configs.KLPROD.js",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "gitlabApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"branch\": \"{{$('StartupConfigs').last().json.newBranchName}}\",\n  \"commit_message\": \"chore: init KLPROD config\",\n   \"content\": {{ JSON.stringify($json.content) }}\n}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2040,
+        -440
+      ],
+      "id": "8ee6be37-849f-4c62-8e21-5ae1f2474667",
+      "name": "Create KLPROD SC1",
+      "executeOnce": true,
+      "credentials": {
+        "gitlabApi": {
+          "id": "CaFzD7fP15mjxSRs",
+          "name": "Gitlab Account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Filter project id": [
+      {
+        "json": {
+          "id": 422,
+          "default_branch": "master"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "StartupConfigs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "VG2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Commit & Push": {
+      "main": [
+        [
+          {
+            "node": "Create MR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter project id": {
+      "main": [
+        []
+      ]
+    },
+    "Create MR": {
+      "main": [
+        []
+      ]
+    },
+    "StartupConfigs": {
+      "main": [
+        [
+          {
+            "node": "Get all game service repositories",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get all game service repositories": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "File exists?": {
+      "main": [
+        [
+          {
+            "node": "Update KLPROD VG2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VG2": {
+      "main": [
+        [
+          {
+            "node": "Get PROD Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SC1": {
+      "main": [
+        []
+      ]
+    },
+    "Get PROD Config": {
+      "main": [
+        [
+          {
+            "node": "File exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "File exists?2": {
+      "main": [
+        [
+          {
+            "node": "Update KL configs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get PROD config of Sedie": {
+      "main": [
+        [
+          {
+            "node": "File exists?2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update KL configs": {
+      "main": [
+        [
+          {
+            "node": "Create File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update KLPROD SC1": {
+      "main": [
+        [
+          {
+            "node": "Create KLPROD SC1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update KLPROD VG2": {
+      "main": [
+        [
+          {
+            "node": "Create KLPROD VG2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create KLPROD VG2": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create KLPROD SC1": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "cf2f3545-14ce-4410-b41e-298d6adc3ec7",
+  "meta": {
+    "instanceId": "98bfed1c0f22fa9e07d0e38dc58da94b0281d63095bd4ba14894d42a90a063e3"
+  },
+  "id": "HOJiCsaaGihEkLIo",
+  "tags": []
+}
